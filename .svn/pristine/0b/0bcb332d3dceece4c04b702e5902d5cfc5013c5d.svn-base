@@ -1,0 +1,21 @@
+<template>
+  <div>
+      <baseHeader :header-title="headerTitle" />
+      <img src="../../assets/img/doc/doc.jpg">
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'AbaoDoc',
+  data: () => ({
+    headerTitle: '阿宝技术文档'
+  })
+}
+</script>
+
+<style lang="scss" scoped>
+img {
+    width: 100%;
+}
+</style>

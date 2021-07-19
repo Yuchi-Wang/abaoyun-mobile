@@ -1,0 +1,319 @@
+<template>
+  <div class="home-main">
+    <van-swipe :loop="false" class="main-page" :style="{'height': windowsHeight + 'px'}" vertical>
+      <van-swipe-item class="first-page">
+        <div class="first-banner">
+          <h4>阿宝云</h4>
+          <h3>阿宝是什么？</h3>
+          <p>阿宝是智能金融AI助手</p>
+          <van-button type="info" @click="consultUs">咨询</van-button>
+        </div>
+        <h3 class="main-title">阿宝能做什么？</h3>
+        <p>通过金融NLP技术、人脸识别、语音等技术</p>
+        <p>摆脱传统的交易模式，在随意、流动的场景进行交易</p>
+        <van-button type="info" class="free-use" @click="abaoDetail">了解详情</van-button>
+      </van-swipe-item>
+      <van-swipe-item class="second-page">
+        <div class="second-banner" style="height: 23rem">
+          <van-button type="info" @click="consultUs">咨询</van-button>
+          <h3>金融NLP是什么？</h3>
+          <p>
+            金融NLP是自然语言技术，通过专业的金融知识库，以及自助学习功能，它可以听懂你、读懂你实现查询、交易等金融软件等操作
+          </p>
+        </div>
+        <van-row gutter="20">
+          <van-col v-for="item in functionList" :key="item.id" span="8">
+            <div>
+              <div>
+                <div
+                  class="product-characteristic-bg"
+                  :style="{backgroundImage: 'url('+ item.src +')'}"
+                />
+                <p>{{ item.title }}</p>
+              </div>
+            </div>
+          </van-col>
+        </van-row>
+        <h3>接入方案</h3>
+        <van-steps active-icon="success" active-color="#324BE3" inactive-color="#324BE3">
+          <van-step>选择服务</van-step>
+          <van-step>获取appid</van-step>
+          <van-step>获取接口</van-step>
+          <van-step>使用阿宝</van-step>
+        </van-steps>
+        <div class="button-area">
+          <van-button type="info" class="free-use" @click="nlpDetail">了解详情</van-button>
+          <!-- <van-button type="default" class="doc">技术文档</van-button> -->
+        </div>
+      </van-swipe-item>
+    </van-swipe>
+    <van-popup v-model="showPopup">
+      <h3>咨询电话</h3>
+      <p>
+        <van-icon name="phone" />
+        021-61266911
+      </p>
+    </van-popup>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Home',
+  data: () => ({
+    windowsHeight: document.body.clientHeight,
+    bannerList: [
+      { id: 1, src: require('@/assets/img/home/banner1.jpg') },
+      { id: 2, src: require('@/assets/img/home/banner2.jpg') }
+    ],
+    functionList: [
+      {
+        id: 1,
+        src: require('@/assets/img/home/dictionaries.svg'),
+        title: '金融词库'
+      },
+      {
+        id: 2,
+        src: require('@/assets/img/home/scene.svg'),
+        title: '多场景'
+      },
+      {
+        id: 3,
+        src: require('@/assets/img/home/interactive.svg'),
+        title: '人机交互'
+      }
+    ],
+    showPopup: false
+  }),
+  methods: {
+    consultUs() {
+      this.showPopup = true
+    },
+    abaoDetail() {
+      this.$router.push('/abao-detail')
+    },
+    nlpDetail() {
+      this.$router.push('/nlp-detail')
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.home-main {
+  .van-popup {
+    width: 20rem;
+    padding: .75rem;
+    p {
+      width: 100%;
+      background: #F8F8F8;
+      margin-top: .55rem;
+      height: 3.5rem;
+      line-height: 3.5rem;
+      font-size: 1.167rem;
+      text-align: center;
+      .van-icon {
+        color: #324BE3;
+        vertical-align: middle;
+      }
+    }
+    h3 {
+      position: relative;
+      margin-left: 1.167rem;
+      height: 1.667rem;
+      line-height: 1.667rem;
+      font-size: 1.1667rem;
+      font-weight: 600;
+      color: #000;
+      &::after {
+        content: "";
+        position: absolute;
+        width: .333rem;
+        height: 1.5rem;
+        background: #324BE3;
+        left: -.667rem;
+        border-radius: .167rem;
+      }
+    }
+  }
+  .first-page {
+    background: #fff;
+    .main-title {
+      text-align: center;
+      margin: 2.1667rem 0;
+      font-size: 1.5rem;
+      height: 2.083rem;
+      line-height: 2.083rem;
+      font-weight: 600;
+    }
+    .first-banner {
+      width: 100%;
+      height: 28.25rem;
+      background: url('../../assets/img/home/banner1.jpg');
+      position: relative;
+      background-size: cover;
+      background-repeat: no-repeat;
+      padding: 3rem 2.1667rem;
+      box-sizing: border-box;
+      h3 {
+        margin-top: 6.167rem;
+        line-height: 2.75rem;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 600;
+        color: #FFF;
+        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      p {
+        margin-top: .833rem;
+        line-height: 1.667rem;
+        font-size: 1.167rem;
+        font-weight: 400;
+        color: #FFF;
+      }
+      h4 {
+        color: #fff;
+        font-weight: 400;
+        color: #FFF;
+        line-height: 1.4167rem;
+      }
+      .van-button {
+        position: absolute;
+        top: 0;
+        right: 2.1667rem;
+        width: 6rem;
+        height: 2.1rem;
+        line-height: 2.1rem;
+        border-radius: 7.833rem .1667rem 8.333rem 8.333rem;
+      }
+    }
+    p {
+      text-align: center;
+      margin-bottom: 1rem;
+      line-height: 1.5rem;
+      font-size: 1.083rem;
+      font-weight: 400;
+      color: #000;
+    }
+    .van-button {
+      display: block;
+      margin: 3rem auto 0;
+      width: 8.333rem;
+      height: 2.5rem;
+      line-height: 2.5rem;
+      background: #324BE3;
+      border-color: #324BE3;
+      border-radius: 1.25rem;
+      font-size: 1rem;
+      color: #fff;
+    }
+  }
+  .second-page {
+    background: #fff;
+    .second-banner {
+      position: relative;
+      padding: 6rem 2.25rem 0 2.25rem;
+      background: url('../../assets/img/home/banner2.jpg');
+      background-size: cover;
+      background-repeat: no-repeat;
+      .van-button {
+        position: absolute;
+        top: 3.25rem;
+        right: 2.1667rem;
+        width: 6rem;
+        height: 2.1rem;
+        font-size: 1rem;
+        line-height: 2.1rem;
+        background: #324BE3;
+        border-color: #324BE3;
+        border-radius: 7.833rem .1667rem 8.333rem 8.333rem;
+      }
+      h3 {
+        margin-top: 3rem;
+        font-size: 2rem;
+        font-weight: 600;
+        color: #FFF;
+        line-height: 2.75rem;
+        text-shadow: 0 .167rem .333rem rgba(0, 0, 0, .5);
+      }
+      p {
+        margin-top: 2.416rem;
+        font-size: 1.083rem;
+        font-weight: 400;
+        color: #FFF;
+        line-height: 1.5rem;
+      }
+    }
+    .van-row {
+      padding: 0 2.1667rem;
+      position: absolute;
+      width: 100%;
+      box-sizing: border-box;
+      transform: translateY(-3.875rem);
+      .van-col {
+        > div {
+          width: 100%;
+          height: 7.75rem;
+          display: flex;
+          align-items:center;
+          background: linear-gradient(180deg, #1E23F9 0%, #A99AFF 100%);
+          box-shadow: 0 .667rem .833rem 0 #CAC9EA;
+          border-radius: .333rem;
+          >div {
+            margin: auto;
+            text-align: center;
+            >div{
+              width: 3rem;
+              height: 3rem;
+              margin: auto;
+              background-repeat: no-repeat;
+              background-size: contain;
+            }
+            p {
+              margin-top: .833rem;
+              height: 1.667rem;
+              line-height: 1.667rem;
+              font-size: 1.167rem;
+              font-weight: 600;
+              color: #FFFFFF;
+            }
+          }
+        }
+      }
+    }
+    h3 {
+      margin-top: 6rem;
+      height: 2rem;
+      line-height: 2rem;
+      font-size: 1.4167rem;
+      font-weight: 600;
+      color: #000;
+      text-align: center;
+    }
+    .van-steps {
+      margin: .5rem 3.4167rem 0;
+    }
+    .button-area {
+      margin: 2rem auto;
+      text-align: center;
+      .free-use {
+        width: 9rem;
+        height: 2.5rem;
+        background: #324BE3;
+        border-color: #324BE3;
+        border-radius: 1.25rem;
+        font-size: 1rem;
+        // margin-right: 2rem;
+      }
+      .doc {
+        width: 9rem;
+        height: 2.5rem;
+        background: #F3F5FF;
+        border-color: #F3F5FF;
+        border-radius: 1.25rem;
+        color: #324BE3;
+        font-size: 1rem;
+      }
+    }
+  }
+}
+</style>

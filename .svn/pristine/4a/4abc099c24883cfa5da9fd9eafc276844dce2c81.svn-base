@@ -1,0 +1,76 @@
+<template>
+  <div>
+    <baseHeader :header-title="headerTitle" />
+    <van-cell-group>
+      <van-field v-model="value" :label="label" :placeholder="'请输入'+ label" />
+    </van-cell-group>
+    <van-button round type="info" @click="save">保存</van-button>
+  </div>
+</template>
+
+<script>
+import { Toast } from 'vant'
+export default {
+  name: 'EditPersonalData',
+  data: () => ({
+    headerTitle: '',
+    routerQueryType: '',
+    value: '',
+    label: '',
+    emailTest: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
+  }),
+  mounted() {
+    this.judgeTitle()
+  },
+  methods: {
+    judgeTitle() {
+      this.routerQueryType = this.$route.query.type
+      switch (this.routerQueryType) {
+        case 'name':
+          this.headerTitle = '修改昵称'
+          this.label = '昵称'
+          break
+        case 'email':
+          this.headerTitle = '绑定邮箱'
+          this.label = '邮箱'
+          break
+        case 'addr':
+          this.headerTitle = '修改地址'
+          this.label = '所在地'
+          break
+      }
+    },
+    save() {
+      if (this.routerQueryType === 'email') {
+        if (!this.value) {
+          Toast.fail('请输入邮箱号')
+        } else if (!this.emailTest.test(this.value)) {
+          Toast.fail('请输入正确的邮箱号')
+        } else {
+          this.$router.push({
+            name: 'vcCode',
+            query: {
+              type: 'email',
+              operation: 'binding'
+            }
+          })
+        }
+      }
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.van-cell-group {
+  margin: .833rem;
+}
+.van-button {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 8.25rem;
+    width: 20.833rem;
+    background: #0078F8;
+    box-shadow: 0 1.5rem 1rem 0 #E1F0FF;
+  }
+</style>

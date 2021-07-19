@@ -1,0 +1,240 @@
+<template>
+  <div class="doc-main">
+    <div class="invoice-header">
+      <i class="turn-back-icon" @click="turnBack" />
+      <van-field v-model="value" maxlength="25" placeholder="请输入发票单号" />
+    </div>
+    <van-pull-refresh v-if="invoiceList.length" v-model="isLoading" @refresh="onRefresh">
+      <van-list
+        v-model="listLoading"
+        :finished="listFinished"
+        finished-text="没有更多了"
+        @load="onLoad"
+      >
+        <van-swipe-cell
+          v-for="(item, index) in invoiceList"
+          :key="item.id"
+          :name="index"
+          :before-close="beforeClose"
+        >
+          <div class="list" @click="getDetail(item.id)">
+            <van-row>
+              <van-col span="16">
+                <p class="invoice-no">发票类型:{{ item.type === '1' ? '个人' : '企业' }}</p>
+                <h4 class="name">{{ item.name }}</h4>
+                <p class="people">
+                  <span>开票时间</span>
+                  {{ item.createTime }}
+                </p>
+              </van-col>
+              <van-col span="8">
+                <p class="invoice-status">发票状态:{{ item.status | orderStatusFilter }}</p>
+                <p class="invoice-price">发票金额（元）</p>
+                <h4 class="price">{{ item.price }}</h4>
+              </van-col>
+            </van-row>
+          </div>
+          <template #right>
+            <van-button square text="删除" type="danger" class="delete-button" />
+          </template>
+        </van-swipe-cell>
+      </van-list>
+    </van-pull-refresh>
+    <van-empty v-else description="暂无发票消息" />
+  </div>
+</template>
+
+<script>
+import { Toast, Dialog } from 'vant'
+const invoiceStatusMap = {
+  '1': '已申请',
+  '2': '申请成功',
+  '3': '已撤销'
+}
+export default {
+  name: 'InvoiceList',
+  filters: {
+    orderStatusFilter: status => invoiceStatusMap[status]
+  },
+  data: () => ({
+    value: '',
+    count: 0,
+    isLoading: false,
+    listLoading: false,
+    listFinished: false,
+    invoiceStatusMap,
+    // invoiceList: []
+    invoiceList: [
+      {
+        id: 1,
+        type: '1',
+        status: '1',
+        name: '阿宝语音认证服务',
+        createTime: '2021-06-22',
+        price: '5000'
+      },
+      {
+        id: 2,
+        type: '1',
+        status: '1',
+        name: '阿宝语音认证服务',
+        createTime: '2021-06-22',
+        price: '5000'
+      },
+      {
+        id: 3,
+        type: '1',
+        status: '2',
+        name: '阿宝语音认证服务',
+        createTime: '2021-06-22',
+        price: '5000'
+      },
+      {
+        id: 4,
+        type: '2',
+        status: '3',
+        name: '阿宝语音认证服务',
+        createTime: '2021-06-22',
+        price: '5000'
+      }
+    ]
+  }),
+  methods: {
+    turnBack() {
+      if (this.$fromUrl.name === null) {
+        this.$router.replace('/')
+      } else {
+        this.$router.back()
+      }
+    },
+    onLoad() {
+      this.listFinished = true
+    },
+    getDetail(index) {
+      this.$router.push({
+        name: 'invoiceDetail',
+        query: {
+          id: index
+        }
+      })
+    },
+    onRefresh() {
+      // this.listFinished = false
+      // this.listLoading = true
+      // this.onLoad()
+      setTimeout(() => {
+        Toast('刷新成功')
+        this.isLoading = false
+        this.count++
+      }, 1000)
+    },
+    beforeClose({ name, position, instance }) {
+      switch (position) {
+        case 'left':
+        case 'cell':
+        case 'outside':
+          instance.close()
+          break
+        case 'right':
+          Dialog.confirm({
+            message: '确定删除吗？'
+          }).then(() => {
+            console.log(name)
+            instance.close()
+          }).catch(() => {
+            // on cancel
+          })
+          break
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.invoice-header {
+  position: relative;
+  text-align: center;
+  background: #fff;
+  /deep/ .van-cell {
+      padding-left: 3.333rem;
+      padding-right: 2.333rem;
+      line-height: 2.5rem;
+      .van-field__control {
+        background: #F0F0F0;
+        border-radius: 1.333rem;
+        padding-left: 1.583rem;
+      }
+  }
+  .turn-back-icon {
+    position: absolute;
+    z-index: 99;
+    display: inline-block;
+    left: 2rem;
+    top: 50%;
+    margin-top: -0.583rem;
+    content: "";
+    display: inline-block;
+    height: 1rem;
+    width: 1rem;
+    border-width: 0 0 2px 2px;
+    border-color: #7D7D7D;
+    border-style: solid;
+    transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
+    -webkit-transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
+  }
+}
+.van-pull-refresh {
+  min-height:  calc(100% - 4.13rem);
+}
+.van-swipe-cell {
+  margin: .8333rem;
+  background: #fff;
+  border-radius: .667rem;
+  -webkit-overflow-scrolling: touch;
+}
+.list {
+  padding: 1.083rem 1.667rem 1.25rem 1.25rem;
+  .invoice-no, .invoice-price {
+    margin-bottom: .667rem;
+    height: 1.4167rem;
+    line-height: 1.4167rem;
+    font-size: 1rem;
+    font-weight: 400;
+  }
+  .name {
+    height: 2rem;
+    line-height: 2rem;
+    margin-bottom: 1.25rem;
+    font-size: 1.4167rem;
+    font-weight: 600;
+    color: #323A44;
+  }
+  .invoice-price {
+      margin-bottom: .15rem;
+  }
+  .invoice-status {
+     margin-bottom: 1.333rem;
+  }
+  .price {
+    height: 38px;
+    font-size: 27px;
+    font-weight: 600;
+    color: #5269FF;
+    line-height: 38px;
+  }
+  .people {
+    span {
+      display: inline-block;
+      margin-right: .5rem;
+      color: #868686;
+    }
+  }
+}
+.delete-button {
+  height: 100%;
+  border-top-right-radius: .667rem;
+  border-bottom-right-radius: .667rem;
+}
+</style>
+

@@ -1,0 +1,64 @@
+import axios from 'axios'
+import { Toast, Dialog } from 'vant'
+import { getToken } from '@/utils/auth'
+import router from '@/router'
+
+const service = axios.create({
+  baseURL: 'http://210.5.7.219:8028/v1',
+  timeout: 15000,
+  withCredentials: false
+})
+
+service.interceptors.request.use(
+  config => {
+    const token = getToken()
+    if (token) {
+      config.headers['token'] = token
+    }
+    return config
+  },
+  error => {
+    console.log(error)
+    Promise.reject(error)
+  }
+)
+
+service.interceptors.response.use(
+  response => {
+    const res = response.data
+    if (res.code === 200) {
+      return Promise.resolve(response)
+    } else if (res.code === 500 || res.code === 502) {
+      Toast(res.msg)
+      return Promise.reject(res)
+    } else {
+      Toast(res.msg)
+      return response
+    }
+  },
+  error => {
+    const errorResponse = error.response
+    console.log(error)
+    if (errorResponse) {
+      if (errorResponse.status === 401) {
+        Dialog.alert({
+          title: '提示',
+          message: '系统未登录，请重新登录'
+        }).then(() => {
+          router.replace({
+            path: '/login',
+            query: { redirect: router.currentRoute.fullPath }
+          })
+        })
+      } else if (errorResponse.status === 500 || errorResponse.status === 502) {
+        Toast('系统错误')
+      } else {
+        Toast(errorResponse.data.msg)
+      }
+    } else {
+      Toast('连接超时')
+    }
+    return Promise.reject(error)
+  })
+
+export default service

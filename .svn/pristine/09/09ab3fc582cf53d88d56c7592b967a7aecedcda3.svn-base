@@ -1,0 +1,58 @@
+<template>
+  <div>
+    <baseHeader :header-title="headerTitle" />
+    <div class="main">
+      <h3>{{ headerTitle }}</h3>
+      <p>{{ questionDetail }}</p>
+    </div>
+  </div>
+</template>
+
+<script>
+import { getDetail } from '@/api/question'
+export default {
+  name: 'QuestionDetail',
+  data:() => ({
+    detailId: -1,
+    headerTitle: '',
+    questionDetail: ''
+  }),
+  mounted() {
+    this.getDetail()
+  },
+  methods: {
+    getDetail() {
+      this.detailId = this.$route.query.id
+      getDetail({ id:this.detailId }).then(res => {
+        this.headerTitle = res.data.data.name
+        this.questionDetail = res.data.data.description
+      })
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.main {
+  background: #fff;
+  margin: 1rem;
+  border-radius: .333rem;
+  padding: 1.4167rem 1.167rem;
+  h3 {
+    height: 1.667rem;
+    font-size: 1.167rem;
+    font-weight: 400;
+    color: #000;
+    line-height: 1.667rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #D7D7D7;
+  }
+  p {
+    margin-top: 1.25rem;
+    font-size: 1.167rem;
+    font-weight: 400;
+    color: #000;
+    line-height: 1.667rem;
+  }
+}
+</style>

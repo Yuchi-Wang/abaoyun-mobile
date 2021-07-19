@@ -1,0 +1,17 @@
+import request from '@/utils/request'
+
+export function getList(params) {
+  return request({
+    url: '/productManage/getProductList',
+    method: 'post',
+    params
+  })
+}
+
+export function getDetail(params) {
+  return request({
+    url: '/productManage/getProductDetail',
+    method: 'post',
+    params
+  })
+}

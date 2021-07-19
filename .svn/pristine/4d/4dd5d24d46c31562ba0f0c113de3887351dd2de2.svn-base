@@ -1,0 +1,192 @@
+<template>
+  <div class="doc-main">
+    <baseHeader :header-title="headerTitle" />
+    <van-pull-refresh v-if="messageList.length" v-model="isRefrshLoading" @refresh="onRefresh">
+      <van-list
+        v-model="listLoading"
+        :finished="listFinished"
+        finished-text="没有更多了"
+        @load="onLoad"
+      >
+        <van-swipe-cell
+          v-for="(item, index) in messageList"
+          :key="item.information_id"
+          :name="index"
+          :before-close="beforeClose"
+        >
+          <div class="list" @click="getDetail(item.information_id)">
+            <van-row>
+              <van-col span="2">
+                <div class="message-icon" />
+              </van-col>
+              <van-col span="16">
+                <h4 class="type">{{ item.information_title }}</h4>
+                <p class="people">
+                  {{ item.content }}
+                </p>
+              </van-col>
+              <van-col span="6">
+                <p class="date">{{ item.updatetime.substring(0, 10) }}</p>
+              </van-col>
+            </van-row>
+          </div>
+          <template #right>
+            <van-button square text="删除" type="danger" class="delete-button" />
+          </template>
+        </van-swipe-cell>
+      </van-list>
+    </van-pull-refresh>
+    <van-empty v-if="emptyShow" description="暂无相关消息" />
+  </div>
+</template>
+<script>
+import { Toast, Dialog } from 'vant'
+import { getMessageList, deleteMessage } from '@/api/message'
+export default {
+  name: 'MessageList',
+  data: () => ({
+    headerTitle: '我的消息',
+    isRefrshLoading: false,
+    listLoading: false,
+    listFinished: false,
+    messageList: [],
+    isReflash: false,
+    hasNextPage: false,
+    pageIndex: 1,
+    pageSize: 8,
+    emptyShow: false
+  }),
+  mounted() {
+    this.getMessageList()
+  },
+  methods: {
+    onLoad() {
+      if (this.isRefrshLoading) {
+        this.messageList = []
+        this.isRefrshLoading = false
+      } else {
+        if (this.hasNextPage) {
+          setTimeout(() => {
+            this.pageIndex++
+            this.getMessageList()
+          }, 300)
+        } else {
+          this.listLoading = false
+          this.listFinished = true
+        }
+      }
+    },
+    getMessageList() {
+      const params = {
+        pageIndex: this.pageIndex,
+        receiver: localStorage.getItem('userCode'),
+        pageSize: this.pageSize
+      }
+      getMessageList(params).then(res => {
+        this.isReflash = true
+        this.listLoading = false
+        const responseData = res.data.data
+        if (responseData && responseData.list.length) {
+          for (let i = 0; i < responseData.list.length; i++) {
+            this.messageList.push(responseData.list[i])
+          }
+          this.hasNextPage = responseData.hasNextPage
+        } else {
+          this.listFinished = true
+        }
+      })
+    },
+    getDetail(id) {
+      this.$router.push({
+        name: 'messageDetail',
+        query: {
+          id: id
+        }
+      })
+    },
+    onRefresh() {
+      this.isReflash = false
+      setTimeout(() => {
+        this.messageList = []
+        this.pageIndex = 1
+        this.isRefrshLoading = false
+        this.listFinished = false
+        this.getMessageList()
+      },1000)
+      setTimeout(() => {
+        this.isReflash ? Toast('刷新成功') : Toast('刷新失败')
+      }, 1500)
+    },
+    beforeClose({ name, position, instance }) {
+      switch (position) {
+        case 'left':
+        case 'cell':
+        case 'outside':
+          instance.close()
+          break
+        case 'right':
+          Dialog.confirm({
+            message: '确定删除吗？'
+          }).then(() => {
+            const deteleId = this.messageList[name].information_id
+            deleteMessage({ information_id: deteleId }).then(res => {
+              Toast(res.data.msg)
+              this.messageList.splice(name, 1)
+              if (this.messageList.length === 0) {
+                this.emptyShow = true
+              }
+            })
+            instance.close()
+          }).catch(() => {
+            // on cancel
+          })
+          break
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.message-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  background: url('../../assets/img/user/my/notice.svg') no-repeat;
+  background-size: contain;
+}
+.van-pull-refresh {
+  // overflow: visible;
+  margin-top: .833rem;
+  border-radius: .667rem;
+}
+.van-swipe-cell {
+  margin: 0 .8333rem;
+  background: #fff;
+  -webkit-overflow-scrolling: touch;
+}
+.van-row {
+  display: flex;
+  align-items: center;
+}
+.list {
+  padding: 1.25rem;
+  .type {
+    height: 2rem;
+    line-height: 2rem;
+    margin-bottom: .25rem;
+    font-size: 1.333rem;
+    color: #323A44;
+  }
+  .people {
+    color: #868686;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow:ellipsis;
+  }
+}
+.delete-button {
+  height: 100%;
+}
+</style>
+

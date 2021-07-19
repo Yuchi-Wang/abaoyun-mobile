@@ -1,0 +1,244 @@
+<template>
+  <div>
+    <baseHeader :header-title="headerTitle" />
+    <div class="chat-content">
+      <div>
+        <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
+          <!-- 对方 -->
+          <div v-if="!item.mineMsg" class="word">
+            <img src="../../assets/img/user/my/system_avatar.png">
+            <div class="info-content" v-html="item.contactText" />
+          </div>
+          <!-- 我的 -->
+          <div v-else class="word-my">
+            <div class="info-content">{{ item.contactText }}</div>
+            <img src="../../assets/img/user/my/user.svg">
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer ref="footer">
+      <van-field
+        v-model="value"
+        type="textarea"
+        autosize
+        rows="1"
+        clearable
+        @focus="inputFocus"
+        @blur="inputBlur"
+      />
+      <van-button ref="submitButton" type="primary" :disabled="!value.length" @click="submit">发送</van-button>
+    </footer>
+  </div>
+</template>
+
+<script>
+import Vue from 'vue'
+import { Toast } from 'vant'
+import { post } from '@/utils/request'
+import { getUserInfo } from '@/api/user'
+Vue.prototype.$post = post
+export default {
+  name: 'ChatRoom',
+  data: () => ({
+    headerTitle: '阿宝',
+    value: '',
+    chatContent: [],
+    equipment: '',
+    phone: '',
+    abaoBaseUrl: 'http://ybao.todaybond.cn'
+  }),
+  mounted() {
+    this.checkEquipment()
+    this.getUserPhone()
+  },
+  methods: {
+    checkEquipment() {
+      const os = (function() {
+        const ua = navigator.userAgent
+        const isWindowsPhone = /(?:Windows Phone)/.test(ua)
+        const isSymbian = /(?:SymbianOS)/.test(ua) || isWindowsPhone
+        const isAndroid = /(?:Android)/.test(ua)
+        const isFireFox = /(?:Firefox)/.test(ua)
+        const isChrome = /(?:Chrome|CriOS)/.test(ua)
+        const isTable = /(?:iPad|PlayBook)/.test(ua) || (isAndroid && !/(?:Mobile)/.test(ua)) || ((isFireFox || isChrome) && /(?:Tablet)/.test(ua))
+        const isPhone = /(?:iPhone)/.test(ua) && !isTable
+        const isPc = !isPhone && !isAndroid && !isSymbian
+        return {
+          isTable: isTable,
+          isPhone: isPhone,
+          isAndroid: isAndroid,
+          isPc: isPc
+        }
+      }())
+      if (os.isAndroid || os.isPhone) {
+        this.quipment = 'phone'
+      } else if (os.isTable) {
+        this.quipment = 'ipad'
+      } else if (os.isPc) {
+        this.quipment = 'Intnet'
+      }
+    },
+    getUserPhone() {
+      const params = { user_code: localStorage.getItem('userCode') }
+      getUserInfo(params).then(response => {
+        this.phone = response.data.data.phone
+        this.loginAbao()
+      })
+    },
+    loginAbao() {
+      if (this.phone) {
+        const params = {
+          Phone: this.phone
+        }
+        const url = `${this.abaoBaseUrl}/dxwx/chatRegister`
+        this.$post(url, params).then(res => {
+          if (res.Code === '0') {
+            // return Promise.resolve(response)
+          } else if (res.Code === '-404' && res.ErrorMsg === '重复注册') {
+            // return Promise.reject(res)
+          } else {
+            Toast(res.ErrorMsg)
+          }
+        })
+      } else {
+        Toast('此操作需绑定您的手机号')
+        setTimeout(() => {
+          this.$router.push({
+            name: 'changeBinding',
+            query: {
+              redirect: '/chat-room'
+            }
+          })
+        }, 1000)
+      }
+    },
+    inputFocus() {
+      this.$refs.footer.setAttribute('style', 'padding-bottom: 1rem')
+      this.$refs.submitButton.setAttribute('style', 'bottom: 1rem')
+    },
+    inputBlur() {
+      this.$refs.footer.setAttribute('style', 'bottom: 0')
+      this.$refs.submitButton.setAttribute('style', 'bottom: 3rem')
+    },
+    submit() {
+      this.chatContent.push({
+        mineMsg: true,
+        contactText: this.value
+      })
+      const subContent = this.value
+      this.value = ''
+      const params = {
+        ToUserName: '',
+        FromUserName: '18017511907',
+        MsgType: 'text',
+        Content: subContent,
+        AppId: '',
+        SourceType: 'phone',
+        Authorization: '',
+        Time: new Date().getTime()
+      }
+      const url = `${this.abaoBaseUrl}/dxwx/chat`
+      this.$post(url, params).then(res => {
+        if (res.Code === '0') {
+          this.chatContent.push({
+            mineMsg: false,
+            contactText: res.Content
+          })
+        } else {
+          Toast(res.Code)
+        }
+      })
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 1rem 3rem 1rem;
+  box-sizing: border-box;
+  background: #e8e8e8;
+  z-index: 9999;
+  .van-cell {
+   width: 80%;
+  }
+  .van-field {
+    border-radius: .4rem;
+  }
+  .van-button {
+    position: absolute;
+    right: 1rem;
+    bottom: 3rem;
+    border-radius: .4rem;
+  }
+}
+.chat-content {
+  padding: 1.25rem 1.25rem 8rem 1.25rem;
+  height: calc(100% - 13rem);
+  overflow: auto;
+  .word {
+    display: flex;
+    margin-bottom: .583rem;
+    img {
+      width: 3.3rem;
+      height: 3.3rem;
+      border-radius: 50%;
+    }
+    .info-content {
+      position: relative;
+      max-width: 68%;
+      margin-top: .667rem;
+      margin-left: .833rem;
+      padding: .833rem;
+      background: #fff;
+      border-radius: .333rem;
+      line-height: 1.667rem;
+      font-size: 1.167rem;
+      white-space:  pre-wrap;
+      &:before {
+        position: absolute;
+        left: -.667rem;
+        top: .667rem;
+        content: '';
+        border-right: .833rem solid #FFF;
+        border-top: .667rem solid transparent;
+        border-bottom: .667rem solid transparent;
+      }
+    }
+  }
+  .word-my {
+    display: flex;
+    justify-content:flex-end;
+    margin-bottom: .583rem;
+    img{
+       width: 3.3rem;
+       height: 3.3rem;
+       border-radius: 50%;
+     }
+    .info-content {
+      position: relative;
+      max-width: 68%;
+      padding: .833rem;
+      margin: .667rem .833rem 0 0;
+      background: #A0EA6F;
+      line-height: 1.667rem;
+      font-size: 1.167rem;
+      border-radius: .333rem;
+      &:after {
+        position: absolute;
+        right: -.667rem;
+        top: .667rem;
+        content: '';
+        border-left: .833rem solid #A0EA6F;
+        border-top: .667rem solid transparent;
+        border-bottom: .667rem solid transparent;
+      }
+    }
+  }
+}
+</style>

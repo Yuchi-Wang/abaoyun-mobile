@@ -1,0 +1,323 @@
+<template>
+  <div class="main">
+    <div>
+      <h3>请输入验证码</h3>
+      <van-password-input
+        :value="value"
+        :mask="false"
+        :gutter="10"
+        :focused="showKeyboard"
+        :error-info="errorInfo"
+        @focus="showKeyboard = true"
+      />
+      <van-number-keyboard
+        v-model="value"
+        :show="showKeyboard"
+        :maxlength="6"
+        @blur="showKeyboard = false"
+      />
+      <span class="vc-toast">验证码已发送至您的{{ bindingType === 'mobile' ? '手机' : '邮箱' }}</span>
+      <span class="count-down-area">
+        <van-count-down v-if="isConutDownShow" :time="time" format="ss 秒重新发送" @finish="finish" />
+        <span v-else class="re-send" @click="reConutDown">重新发送</span>
+      </span>
+    </div>
+  </div>
+</template>
+
+<script>
+import { Toast } from 'vant'
+import {
+  getMobileMessage,
+  phoneSign,
+  mobileLogin,
+  getEmailMessage,
+  emailSign,
+  emailLogin,
+  handleChangeEmail,
+  handleChangePhone,
+  getUserCode
+} from '@/api/user'
+import { setToken } from '@/utils/auth'
+export default {
+  name: 'Vcode',
+  data: () => ({
+    value: '',
+    showKeyboard: false,
+    time: 0,
+    errorInfo: '',
+    isConutDownShow: false,
+    bindingType: '',
+    operation: '',
+    userAlready: '1',
+    redirect: '/'
+  }),
+  watch: {
+    value(value) {
+      if (value.length === 6 && this.bindingType === 'mobile' && this.operation === 'sigin') {
+        // 发送验证码，证明是新用户OR注册用户，0为新用户，1为注册用户
+        if (this.userAlready === '0') {
+          const params = {
+            phone: this.$route.query.phoneNum,
+            code: value
+          }
+          phoneSign(params).then(res => {
+            if (res.data.code === 200) {
+              mobileLogin(params).then(res => {
+                setToken(res.data.data.token)
+                setTimeout(() => {
+                  this.getUserCode(this.$route.query.phoneNum)
+                }, 2000)
+              })
+            }
+          })
+        } else {
+          const params = {
+            phone: this.$route.query.phoneNum,
+            code: value
+          }
+          mobileLogin(params).then(res => {
+            if (res.data) {
+              setToken(res.data.data.token)
+              setTimeout(() => {
+                this.getUserCode(this.$route.query.phoneNum)
+              }, 2000)
+            }
+          })
+        }
+      } else if (value.length === 6 && this.bindingType === 'email' && this.operation === 'sigin') {
+        // 发送验证码，证明是新用户OR注册用户，0为新用户，1为注册用户
+        if (this.userAlready === '0') {
+          const params = {
+            mailTo: this.$route.query.email,
+            code: value
+          }
+          emailSign(params).then(res => {
+            if (res.data.msg === '注册成功') {
+              emailLogin(params).then(res => {
+                if (res.data.code === 200) {
+                  setToken(res.data.data.token)
+                  setTimeout(() => {
+                    this.getUserCode(this.$route.query.email)
+                  }, 2000)
+                }
+              })
+            }
+          })
+        } else if (this.userAlready === '1') {
+          const params = {
+            mailTo: this.$route.query.email,
+            code: value
+          }
+          emailLogin(params).then(res => {
+            if (res.data.code === 200) {
+              setToken(res.data.data.token)
+              setTimeout(() => {
+                this.getUserCode(this.$route.query.email)
+              }, 2000)
+            }
+          })
+        }
+      } else if (value.length === 6 && this.bindingType === 'email' && this.operation === 'changeBinding') {
+        const params = {
+          user_code: localStorage.getItem('userCode'),
+          mailTo: this.$route.query.num,
+          type: '1',
+          code: value
+        }
+        handleChangeEmail(params).then(res => {
+          if (res.data.code === 200) {
+            this.$router.replace('/change-email')
+          }
+        })
+      } else if (value.length === 6 && this.bindingType === 'email' && this.operation === 'confirmBinding') {
+        const params = {
+          user_code: localStorage.getItem('userCode'),
+          mailTo: this.$route.query.num,
+          type: '2',
+          code: value
+        }
+        handleChangeEmail(params).then(res => {
+          if (res.data.code === 200) {
+            this.getUserCode(this.$route.query.num)
+          }
+        })
+      } else if (value.length === 6 && this.bindingType === 'mobile' && this.operation === 'confirmBinding') {
+        const params = {
+          user_code: localStorage.getItem('userCode'),
+          phone: this.$route.query.phoneNum,
+          type: '2',
+          code: value
+        }
+        handleChangePhone(params).then(res => {
+          if (res.data.code === 200) {
+            Toast(res.data.msg)
+            this.getUserCode(this.$route.query.phoneNum)
+          }
+        })
+      } else if (value.length === 6 && this.bindingType === 'mobile' && this.operation === 'changeBinding') {
+        const params = {
+          user_code: localStorage.getItem('userCode'),
+          phone: this.$route.query.num,
+          type: '1',
+          code: value
+        }
+        handleChangePhone(params).then(res => {
+          if (res.data.code === 200) {
+            this.$router.replace('/change-binding')
+          }
+        })
+      }
+    }
+  },
+  mounted() {
+    this.bindingType = this.$route.query.type
+    this.operation = this.$route.query.operation
+    this.redirect = this.$route.query.redirect
+    if (this.operation === 'sigin' ||
+      this.operation === 'confirmBinding' ||
+      this.operation === 'changeBinding') {
+      this.conutDown()
+    }
+    this.getMessage()
+  },
+  methods: {
+    finish() {
+      this.isConutDownShow = false
+    },
+    getPhoneMessage() {
+      const params = {
+        phone: this.$route.query.phoneNum,
+        type: '1'
+      }
+      getMobileMessage(params).then(res => {
+        this.userAlready = res.data.data.isMakeSureSign
+      })
+    },
+    getChangePhoneMessage() {
+      const params = {
+        phone: this.$route.query.num,
+        type: '2'
+      }
+      getMobileMessage(params).then(res => {
+        Toast(res.data.msg)
+      })
+    },
+    getConfirmMessage() {
+      const params = {
+        phone: this.$route.query.phoneNum,
+        type: '2'
+      }
+      getMobileMessage(params).then(res => {
+        Toast(res.data.msg)
+      })
+    },
+    getEmailMessage() {
+      const params = {
+        mailTo: this.$route.query.email,
+        title: '阿宝云邮箱验证',
+        type: '1'
+      }
+      getEmailMessage(params).then(res => {
+        this.userAlready = res.data.data.isMakeSureSign
+      })
+    },
+    getChangeEmailMessage() {
+      const params = {
+        mailTo: this.$route.query.num,
+        title: '阿宝云邮箱验证',
+        type: '2'
+      }
+      getEmailMessage(params).then(res => {
+        Toast(res.data.msg)
+      })
+    },
+    getUserCode(code) {
+      getUserCode({
+        phoneOrEmail: code
+      }).then(res => {
+        localStorage.setItem('userCode', res.data.data)
+        this.$router.replace(this.redirect)
+      })
+    },
+    conutDown() {
+      this.time = 1000 * 60
+      this.isConutDownShow = true
+    },
+    getMessage() {
+      if (this.bindingType === 'email' && this.operation === 'sigin') {
+        this.getEmailMessage()
+      } else if (this.bindingType === 'mobile' && this.operation === 'sigin') {
+        this.getPhoneMessage()
+      } else if (this.bindingType === 'mobile' && this.operation === 'changeBinding') {
+        this.getChangePhoneMessage()
+      } else if (this.bindingType === 'email' && (this.operation === 'changeBinding' || this.operation === 'confirmBinding')) {
+        this.getChangeEmailMessage()
+      } else if (this.bindingType === 'mobile' && this.operation === 'confirmBinding') {
+        this.getConfirmMessage()
+      }
+    },
+    reConutDown() {
+      this.conutDown()
+      this.getMessage()
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.main {
+  padding: 12.583rem 4rem 0;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+ > div {
+    position: relative;
+  }
+  .vc-toast {
+    position: absolute;
+    top: 8.5rem;
+    color: #000;
+    font-weight: 400;
+  }
+  .count-down-area {
+    position: absolute;
+    top: 8.3rem;
+    right: 0;
+    .van-count-down {
+      font-weight: 400;
+      color: #666;
+      font-size: 1rem;
+    }
+    .re-send {
+      display: inline-block;
+      margin-top: .25rem;
+      font-weight: 400;
+      color: #0078F8;
+      font-size: 1rem;
+      height: 1.167rem;
+      line-height: 1.167rem;
+    }
+  }
+  h3 {
+    height: 2rem;
+    font-size: 1.5rem;
+    margin-bottom: 1.667rem;
+    font-weight: 600;
+    color: #000000;
+    line-height: 2rem;
+    text-align: center;
+  }
+  .van-password-input__security li {
+    border-bottom: 1px solid #D6D6D6;
+  }
+  .van-password-input__error-info {
+    color: #FF2500;
+    font-size: 1rem;
+    margin-top: 4rem;
+  }
+}
+</style>

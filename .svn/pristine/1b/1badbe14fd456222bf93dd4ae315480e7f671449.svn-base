@@ -1,0 +1,7 @@
+NODE_ENV = 'production'
+VUE_APP_CURRENTMODE = 'prod'
+BASE_URL: "/"
+
+VUE_APP_BASE_API = '/v1'
+VUE_APP_REQUEST_URL = 'http://210.5.7.219:8028'
+VUE_APP_IMG_URL = 'http://210.5.7.219:8088'

@@ -1,0 +1,18 @@
+<template>
+  <div class="app-wrapper">
+    <router-view />
+    <van-tabbar route active-color="#3C51FF" inactive-color="#858585">
+      <van-tabbar-item replace to="/" icon="wap-home-o">首页</van-tabbar-item>
+      <van-tabbar-item replace to="/product-list" icon="apps-o">产品</van-tabbar-item>
+      <van-tabbar-item replace to="/service" icon="description">服务</van-tabbar-item>
+      <van-tabbar-item replace to="/my" icon="user-o">我的</van-tabbar-item>
+    </van-tabbar>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.van-tabbar {
+  padding-bottom: calc(30px + constant(safe-area-inset-bottom));
+  padding-bottom: calc(30px + env(safe-area-inset-bottom));
+}
+</style>

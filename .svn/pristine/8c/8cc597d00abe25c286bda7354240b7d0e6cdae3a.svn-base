@@ -1,0 +1,471 @@
+<template>
+  <div class="product-main">
+    <baseHeader :header-title="headerTitle" />
+    <div class="banner">
+      <h3>
+        <span class="san" />
+        产品简介
+      </h3>
+      <p>
+        阿宝是精诚胜龙利用人工智能技术打造的便捷、快速、智能的证券投资交易平台。
+        <br>
+        <br>
+        阿宝利用语音识别、语音合成、NLP语义解析、声纹认证、人脸识别等AI技术，让阿宝实现“能听、会说、懂你”式的证券投资交易平台。
+      </p>
+    </div>
+    <div class="experience">
+      <div>
+        <h3>
+          <span class="san" />
+          产品体验
+        </h3>
+        <p>您可以通过微信搜索公众号“<span>诚龙阿宝</span>”，进行体验</p>
+        <img src="../../assets/img/product/qrcode.jpg">
+      </div>
+    </div>
+    <div class="advantage">
+      <h3>
+        <span class="san" />
+        产品优势
+      </h3>
+      <ul>
+        <li v-for="item in advantageList" :key="item.id">
+          <h4>
+            <i />
+            {{ item.title }}
+          </h4>
+          <p>{{ item.content }}</p>
+        </li>
+      </ul>
+    </div>
+    <div class="scene">
+      <div class="scene-banner">
+        <h3>
+          <span class="san" />
+          产品简介
+        </h3>
+        <h4>智能语音交互</h4>
+        <p style=" margin-bottom: 3rem;">
+          相比传统的交易模式，聊天室下单方式可以给您多一种交易途径、例如开车。
+        </p>
+        <h4>自然语言处理</h4>
+        <p>
+          阿宝可以通过自然语言处理技术，把您表述内容的意图和金融知识库匹配分析；当您出现表述错误的时候，它也可以快速的理解您的意图给出正确反馈。
+        </p>
+      </div>
+    </div>
+    <div class="price">
+      <h3>
+        <span class="san" />
+        产品定价
+      </h3>
+      <van-row>
+        <van-col v-for="item in priceList" :key="item.id" span="8">
+          <div class="price-list-bg" :style="{backgroundImage: 'url('+ item.src +')'}">
+            <span class="price-type">{{ item.type }}</span>
+            <h4>服务量 </h4>
+            <p class="times">{{ item.times }}次</p>
+            <p class="validity">有效期 {{ item.validity }}</p>
+            <p class="cost">{{ item.cost }}</p>
+          </div>
+        </van-col>
+      </van-row>
+    </div>
+    <div class="resources">
+      <h3>
+        <span class="san" />
+        相关资源
+      </h3>
+      <van-button round @click="getAbaoDoc">技术文档</van-button>
+    </div>
+    <footer>
+      <van-button round type="info">免费试用</van-button>
+    </footer>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'PersonalData',
+  data: () => ({
+    headerTitle: '阿宝产品',
+    email: '',
+    emailBinding: '',
+    advantageList: [
+      {
+        id: 1,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '聊天室交易',
+        content: '您可以在聊天室进行交易下单，不必跳出聊天室'
+      },
+      {
+        id: 2,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '智能语音',
+        content: '您可以通过语音的聊天形式和阿宝进行交互'
+      },
+      {
+        id: 3,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '智能金融知识库',
+        content: '通过专属的智能金融知识库，阿宝可以准确的理解股票金融环境下的特定词意'
+      },
+      {
+        id: 4,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '自然语言交易',
+        content: '您可以通过语音形式进行下单'
+      }
+    ],
+    priceList: [
+      {
+        id: 1,
+        type: '套餐一',
+        times: '5000',
+        validity: '6个月',
+        cost: '免费',
+        src: require('@/assets/img/product/cost-bg.svg')
+      },
+      {
+        id: 2,
+        type: '套餐二',
+        times: '15000',
+        validity: '1年',
+        cost: '免费',
+        src: require('@/assets/img/product/cost-bg.svg')
+      },
+      {
+        id: 3,
+        type: '套餐三',
+        times: '30000',
+        validity: '2年',
+        cost: '免费',
+        src: require('@/assets/img/product/cost-bg.svg')
+      }
+    ]
+  }),
+  methods: {
+    getAbaoDoc() {
+      this.$router.push('/abao-doc')
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.product-main {
+  /deep/ .base-header {
+    background: transparent!important;
+    position: relative;
+    z-index: 2;
+    h3 {
+      color: #fff;
+    }
+    .turn-back-icon {
+      border-color: #fff
+    }
+  }
+  .banner {
+    background: url('../../assets/img/product/abao-detail-banner.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 22.167rem;
+    z-index: 1;
+    padding: 0 3.1667rem;
+    box-sizing: border-box;
+    h3 {
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.667rem;
+      text-align: center;
+      margin-top:5.833rem;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    p {
+      margin-top: 2rem;
+      font-size: 1rem;
+      font-weight: 400;
+      color: #FFF;
+      line-height: 1.4167rem;
+    }
+  }
+  .experience {
+    margin-top: 18.5rem;
+    width: 100%;
+    background: #fff;
+    padding: 1.667rem 1.333rem 0 1.333rem;
+    text-align: center;
+    box-sizing: border-box;
+    > div {
+      border-bottom: 1px dashed #E6E6E6 ;
+    }
+    h3 {
+      margin-bottom: 1.667rem;
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    p {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #000000;
+      line-height: 1.4167rem;
+      padding-bottom: 1.167rem;
+      span {
+        color:rgb(60, 81, 255);
+      }
+    }
+    img {
+      width: 10rem;
+      padding-bottom: 1rem;
+    }
+  }
+  .advantage {
+    background: #fff;
+    padding-top: 1.583rem;
+    h3 {
+      margin-bottom: 1.667rem;
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    ul {
+      li {
+        padding: 1.333rem 2.8333rem 1.333rem 2.583rem;
+        &:nth-of-type(odd) {
+          background: #F7F7F7;
+        }
+        h4 {
+          height: 1.4167rem;
+          line-height: 1.4167rem;
+          margin-bottom: .833rem;
+          font-size: 1rem;
+          font-weight: 600;
+          color: #000;
+          i {
+            display: inline-block;
+            background: url('../../assets/img/product/advantage.svg') no-repeat;
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: .5rem;
+            z-index: 1;
+            background-size: contain;
+            vertical-align: middle;
+          }
+        }
+        p {
+          font-size: 1rem;
+          transform: scale(.833, .833);
+          font-weight: 400;
+          color: #000;
+          line-height: 1.4167rem;
+        }
+      }
+    }
+  }
+  .scene {
+    .scene-banner {
+      background: url('../../assets/img/product/nlp-detail-banner.jpg') no-repeat;
+      background-size: cover;
+      width: 100%;
+      height: 22.167rem;
+      z-index: 1;
+      padding: 1.5883rem 3.1667rem 0;
+      box-sizing: border-box;
+      h3 {
+        font-size: 1.167rem;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.667rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        .san {
+          display: inline-block;
+          background: url('../../assets/img/product/san.svg') no-repeat;
+          width: 2rem;
+          height: 1.5rem;
+          margin-right: .5rem;
+          z-index: 1;
+          background-size: contain;
+          vertical-align: top;
+        }
+      }
+      h4 {
+        margin-bottom: .833rem;
+        height: 1.4167rem;
+        line-height: 1.4167rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #FFFFFF;
+      }
+      p {
+        font-size: 1rem;
+        font-weight: 400;
+        color: #FFF;
+        line-height: 1.4167rem;
+      }
+    }
+  }
+  .price {
+    padding: 1.667rem 1.333rem 3.167rem 1.333rem;
+    background: #fff;
+     h3 {
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    .van-row {
+      .price-list-bg {
+        position: relative;
+        width: 100%;
+        padding: 2rem 0 0 .5rem;
+        height: 10.667rem;
+        background-repeat: no-repeat;
+        background-size: cover;
+        box-sizing: border-box;
+        .price-type {
+          position: absolute;
+          color: #fff;
+          font-size: 1rem;
+          transform: scale(.833, .833);
+          top: .3rem;
+          right: 1rem;
+        }
+        h4 {
+          color: #fff;
+          font-size: 1rem;
+          transform: scale(.833, .833);
+        }
+        .times {
+          height: 1.833rem;
+          line-height: 1.833rem;
+          font-size: 1.333rem;
+          font-weight: 600;
+          margin-top: .2rem;
+          margin-left: .6rem;
+          color: #fff;
+        }
+        .validity {
+          margin-top: .75rem;
+          font-size: 1rem;
+          color: #fff;
+          transform: scale(.833, .833);
+        }
+        .cost {
+          margin-top: 1.333rem;
+          color: #fff;
+          height: 1.667rem;
+          font-size: 1.4167rem;
+          margin-left: .6rem;
+        }
+      }
+    }
+  }
+  .resources {
+    text-align: center;
+    padding-top: 1.667rem;
+    padding-bottom: 10rem;
+    padding-left: 1.333rem;
+    padding-right: 1.333rem;
+    background: #fff;
+    border-top: 1px dashed #E6E6E6;
+    h3 {
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    .van-button {
+      width: 19.083rem;
+      height: 3.333rem;
+      line-height: 3.333rem;
+      background: #F2F3FF;
+      border-color: #F2F3FF;
+      border-radius: 20px;
+      font-weight: 600;
+      color: #324BE3;
+    }
+  }
+  footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 6.67rem;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow:0px 1px 5px rgb(173, 173, 173);
+    z-index: 999;
+    .van-button {
+      width: 14.5883rem;
+      height: 2.5rem;
+      line-height: 2.5rem;
+    }
+  }
+}
+</style>

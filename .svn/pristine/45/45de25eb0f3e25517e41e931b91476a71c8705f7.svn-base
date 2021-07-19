@@ -1,0 +1,136 @@
+<template>
+  <div class="doc-main">
+    <baseHeader :header-title="headerTitle" />
+    <van-pull-refresh v-if="serviceList.length" v-model="isLoading" @refresh="onRefresh">
+      <van-list
+        v-model="listLoading"
+        :finished="listFinished"
+        finished-text="没有更多了"
+        @load="onLoad"
+      >
+        <van-swipe-cell
+          v-for="(item, index) in serviceList"
+          :key="item.id"
+          :name="index"
+          :before-close="beforeClose"
+        >
+          <div class="list">
+            <van-row>
+              <van-col span="18">
+                <h4 class="service-title">{{ item.type }}</h4>
+              </van-col>
+              <van-col span="6" style="text-align: right">
+                <van-button type="info" @click="getDetail(item.id)">查看</van-button>
+              </van-col>
+            </van-row>
+          </div>
+          <template #right>
+            <van-button square text="删除" type="danger" class="delete-button" />
+          </template>
+        </van-swipe-cell>
+      </van-list>
+    </van-pull-refresh>
+    <van-empty v-else description="暂无服务信息" />
+  </div>
+</template>
+
+<script>
+import { Toast, Dialog } from 'vant'
+export default {
+  name: 'ServiceList',
+  data: () => ({
+    headerTitle: '应用服务',
+    count: 0,
+    isLoading: false,
+    listLoading: false,
+    listFinished: false,
+    // serviceList: [
+    //   {
+    //     id: 1,
+    //     type: '文字转语音'
+    //   }
+    // ]
+    serviceList: []
+  }),
+  methods: {
+    onLoad() {
+      this.listFinished = true
+    },
+    getDetail(id) {
+      this.$router.push({
+        name: 'serviceDetail',
+        query: {
+          id: id
+        }
+      })
+    },
+    onRefresh() {
+      // this.listFinished = false
+      // this.listLoading = true
+      // this.onLoad()
+      setTimeout(() => {
+        Toast('刷新成功')
+        this.isLoading = false
+        this.count++
+      }, 1000)
+    },
+    beforeClose({ name, position, instance }) {
+      switch (position) {
+        case 'left':
+        case 'cell':
+        case 'outside':
+          instance.close()
+          break
+        case 'right':
+          Dialog.confirm({
+            message: '确定删除吗？'
+          }).then(() => {
+            console.log(name)
+            instance.close()
+          }).catch(() => {
+            // on cancel
+          })
+          break
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.van-pull-refresh {
+  overflow: visible;
+  margin-top: .833rem;
+  border-radius: .667rem;
+}
+.van-swipe-cell {
+  margin: 0 .8333rem;
+  background: #fff;
+  -webkit-overflow-scrolling: touch;
+}
+.van-row {
+  display: flex;
+  align-items: center;
+}
+.list {
+  padding: 1.25rem;
+  .service-title {
+    height: 2rem;
+    line-height: 2rem;
+    margin-bottom: .25rem;
+    font-size: 1.333rem;
+    color: #323A44;
+  }
+  .van-button {
+    width: 5rem;
+    height: 2rem;
+    font-size: 1rem;
+    background: linear-gradient(220deg, #183FEE 0%, #3C51FF 100%);
+    border-radius: 1rem;
+  }
+}
+.delete-button {
+  height: 100%;
+}
+</style>
+

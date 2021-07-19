@@ -1,0 +1,699 @@
+<template>
+  <div class="product-main">
+    <baseHeader :header-title="headerTitle" />
+    <div class="banner" :style="{backgroundImage: `url(${$imgUrl}${productDetail.imageUrl})`}">
+      <h3>
+        <span class="san" />
+        产品简介
+      </h3>
+      <p>{{ productDetail.descript }}</p>
+    </div>
+    <div class="case">
+      <h3>
+        <span class="san" />
+        产品案例
+      </h3>
+      <img src="../../assets/img/product/nlp-1.svg" alt="">
+      <img src="../../assets/img/product/nlp-2.svg" alt="">
+    </div>
+    <div class="advantage">
+      <h3>
+        <span class="san" />
+        产品优势
+      </h3>
+      <ul>
+        <li v-for="item in advantageList" :key="item.id">
+          <h4>
+            <i />
+            {{ item.title }}
+          </h4>
+          <p>{{ item.content }}</p>
+        </li>
+      </ul>
+    </div>
+    <div class="scene">
+      <div class="scene-banner">
+        <h3>
+          <span class="san" />
+          应用场景
+        </h3>
+        <h4>自然语言处理</h4>
+        <p>
+          阿宝可以通过自然语言处理技术，把您表述内容的意图和金融知识库匹配分析；当您出现表述错误的时候，它也可以快速的理解您的意图给出正确反馈。
+        </p>
+      </div>
+    </div>
+    <div class="price">
+      <h3>
+        <span class="san" />
+        产品定价
+      </h3>
+      <van-row>
+        <van-col v-for="item in priceList" :key="item.id" span="8">
+          <div class="price-list-bg" :style="{backgroundImage: 'url('+ item.src +')'}">
+            <span class="price-type">{{ item.type }}</span>
+            <h4>服务量 </h4>
+            <p class="times">{{ item.times }}次</p>
+            <p class="validity">有效期 {{ item.validity }}</p>
+            <p class="cost">{{ item.cost }}</p>
+          </div>
+        </van-col>
+      </van-row>
+    </div>
+    <div class="resources">
+      <h3>
+        <span class="san" />
+        相关资源
+      </h3>
+      <van-button round @click="getNlpDoc">技术文档</van-button>
+    </div>
+    <footer>
+      <van-button round type="info" @click="freeUse">免费试用</van-button>
+    </footer>
+    <!-- 选择套餐 -->
+    <van-popup v-model="useShow" position="bottom" class="select-set-meal">
+      <h4>选择套餐</h4>
+      <van-row gutter="10">
+        <van-col v-for="(item, index) in mealList" :key="item.id" span="8">
+          <span :class="{ active: index === activeIndex }">{{ item.name }}</span>
+        </van-col>
+      </van-row>
+      <van-button class="purchase-button" type="info" @click="purchase">购买</van-button>
+    </van-popup>
+    <!-- 选择付款方式 -->
+    <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal">
+      <h4>付款方式</h4>
+      <van-row gutter="10">
+        <van-col v-for="(item, index) in purchaseList" :key="item.id" span="8">
+          <span :class="{ active: index === activeIndex }">{{ item.name }}</span>
+        </van-col>
+      </van-row>
+      <van-submit-bar :price="0" :loading="submitShow" button-text="提交" @submit="submit" />
+    </van-popup>
+    <!-- 支付结果页 -->
+    <van-popup v-model="resultShow" position="bottom" class="pay-result">
+      <h4>支付成功</h4>
+      <van-icon name="passed" />
+      <div class="account-area">
+        <p>
+          支付金额：
+          <span>￥0</span>
+        </p>
+        <p>付款方式：支付宝</p>
+      </div>
+      <van-button type="info" @click="jarDownLoad">jar包下载</van-button>
+    </van-popup>
+    <!-- jar包 -->
+    <van-popup v-model="jarPopup" class="jar-popup">
+      <h3>jar包地址</h3>
+      <p>http://www.baidu.com</p>
+    </van-popup>
+  </div>
+</template>
+
+<script>
+import { getDetail } from '@/api/product'
+import { aliPay } from '@/api/payment'
+import { createOrder } from '@/api/order'
+export default {
+  name: 'PersonalData',
+  data: () => ({
+    headerTitle: '金融NLP',
+    email: '',
+    emailBinding: '',
+    useShow: false,
+    purchaseShow: false,
+    jarPopup: false,
+    advantageList: [
+      {
+        id: 1,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '金融知识库',
+        content: '通过专属的智能金融知识库，阿宝可以准确的理解股票金融环境下的特定词意'
+      },
+      {
+        id: 2,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '模糊匹配',
+        content: '您可以在聊天室进行交易下单，不必跳出聊天室'
+      },
+      {
+        id: 3,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '聊天室交易',
+        content: '您可以在聊天室进行交易下单，不必跳出聊天室'
+      },
+      {
+        id: 4,
+        src: require('@/assets/img/product/advantage.svg'),
+        title: '聊天室查询',
+        content: '你可以在聊天室查询股票相关信息'
+      }
+    ],
+    priceList: [
+      {
+        id: 1,
+        type: '套餐一',
+        times: '5000',
+        validity: '6个月',
+        cost: '免费',
+        src: require('@/assets/img/product/cost-bg.svg')
+      },
+      {
+        id: 2,
+        type: '套餐二',
+        times: '15000',
+        validity: '1年',
+        cost: '免费',
+        src: require('@/assets/img/product/cost-bg.svg')
+      },
+      {
+        id: 3,
+        type: '套餐三',
+        times: '30000',
+        validity: '2年',
+        cost: '免费',
+        src: require('@/assets/img/product/cost-bg.svg')
+      }
+    ],
+    mealList: [
+      {
+        id: 1,
+        name: '免费试用'
+      },
+      {
+        id: 2,
+        name: '500次'
+      },
+      {
+        id: 3,
+        name: '5000次'
+      },
+      {
+        id: 4,
+        name: '10000次'
+      },
+      {
+        id: 5,
+        name: '50000次'
+      },
+      {
+        id: 6,
+        name: '150000次'
+      }
+    ],
+    purchaseList: [
+      {
+        id: 1,
+        name: '支付宝'
+      }
+    ],
+    activeIndex: 0,
+    submitShow: false,
+    resultShow: false,
+    productDetail: {},
+    paymentAmount: 0
+  }),
+  mounted() {
+    this.getProductDetail()
+  },
+  methods: {
+    getNlpDoc() {
+      this.$router.push('/nlp-doc')
+    },
+    freeUse() {
+      this.useShow = true
+    },
+    getProductDetail() {
+      getDetail({
+        product_Id: this.$route.query.id
+      }).then(res => {
+        this.productDetail = res.data.data
+      })
+    },
+    purchase() {
+      this.useShow = false
+      this.purchaseShow = true
+    },
+    submit() {
+      const params = {
+        phone: '',
+        userID: localStorage.getItem('userCode'),
+        paymentType: '1',
+        paymentAmount: this.paymentAmount,
+        product_Id: this.$route.query.id
+      }
+      aliPay(params).then(res => {
+        if (res.data.code === 200 && res.data.msg) {
+          const orderParams = {
+            product_name: '金融NLP',
+            price_number: '0',
+            payment_amount: '0',
+            order_amount: '0',
+            payment_type: '1',
+            order_status: '1',
+            phone: '',
+            user_code: localStorage.getItem('userCode'),
+            product_id: this.$route.query.id,
+            buy_num: 1,
+            totalcount: 1
+          }
+          createOrder(orderParams).then(res => {
+            if (res.data.code === 200) {
+              this.purchaseShow = false
+              this.resultShow = true
+              setTimeout(() => {
+                this.$router.push('/order-list')
+              }, 2000)
+            }
+          })
+        }
+      })
+    },
+    jarDownLoad() {
+      this.resultShow = false
+      this.jarPopup = true
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.product-main {
+  /deep/ .base-header {
+    background: transparent!important;
+    position: relative;
+    z-index: 2;
+    h3 {
+      color: #fff;
+    }
+    .turn-back-icon {
+      border-color: #fff
+    }
+  }
+  .banner {
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 22.167rem;
+    z-index: 1;
+    padding: 0 3.1667rem;
+    box-sizing: border-box;
+    h3 {
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.667rem;
+      text-align: center;
+      margin-top:5.833rem;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    p {
+      margin-top: 2rem;
+      font-size: 1rem;
+      font-weight: 400;
+      color: #FFF;
+      line-height: 1.4167rem;
+    }
+  }
+  .case {
+    margin-top: 18.5rem;
+    padding-top: 1.667rem;
+    background: #f4f4f4;
+    h3 {
+      margin-bottom: 1rem;
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    img {
+      width: 100%;
+    }
+  }
+  .advantage {
+    background: #fff;
+    padding-top: 1.583rem;
+    h3 {
+      margin-bottom: 1.667rem;
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    ul {
+      li {
+        padding: 1.333rem 2.8333rem 1.333rem 2.583rem;
+        &:nth-of-type(odd) {
+          background: #F7F7F7;
+        }
+        h4 {
+          height: 1.4167rem;
+          line-height: 1.4167rem;
+          margin-bottom: .833rem;
+          font-size: 1rem;
+          font-weight: 600;
+          color: #000;
+          i {
+            display: inline-block;
+            background: url('../../assets/img/product/advantage.svg') no-repeat;
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-right: .5rem;
+            z-index: 1;
+            background-size: contain;
+            vertical-align: middle;
+          }
+        }
+        p {
+          font-size: 1rem;
+          font-weight: 400;
+          color: #000;
+          line-height: 1.4167rem;
+        }
+      }
+    }
+  }
+  .scene {
+    .scene-banner {
+      background: url('../../assets/img/product/nlp-detail-banner.jpg') no-repeat;
+      background-size: cover;
+      width: 100%;
+      height: 22.167rem;
+      z-index: 1;
+      padding: 1.5883rem 3.1667rem 0;
+      box-sizing: border-box;
+      h3 {
+        font-size: 1.167rem;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.667rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        .san {
+          display: inline-block;
+          background: url('../../assets/img/product/san.svg') no-repeat;
+          width: 2rem;
+          height: 1.5rem;
+          margin-right: .5rem;
+          z-index: 1;
+          background-size: contain;
+          vertical-align: top;
+        }
+      }
+      h4 {
+        margin-bottom: .833rem;
+        height: 1.4167rem;
+        line-height: 1.4167rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #FFFFFF;
+      }
+      p {
+        font-size: 1rem;
+        font-weight: 400;
+        color: #FFF;
+        line-height: 1.4167rem;
+      }
+    }
+  }
+  .price {
+    padding: 1.667rem 1.333rem 3.167rem 1.333rem;
+    background: #fff;
+     h3 {
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    .van-row {
+      .price-list-bg {
+        position: relative;
+        width: 100%;
+        padding: 2rem 0 0 .5rem;
+        height: 10.667rem;
+        background-repeat: no-repeat;
+        background-size: cover;
+        box-sizing: border-box;
+        .price-type {
+          position: absolute;
+          color: #fff;
+          font-size: 1rem;
+          transform: scale(.833, .833);
+          top: .3rem;
+          right: 1rem;
+        }
+        h4 {
+          color: #fff;
+          font-size: 1rem;
+          transform: scale(.833, .833);
+        }
+        .times {
+          height: 1.833rem;
+          line-height: 1.833rem;
+          font-size: 1.333rem;
+          font-weight: 600;
+          margin-top: .2rem;
+          margin-left: .6rem;
+          color: #fff;
+        }
+        .validity {
+          margin-top: .75rem;
+          font-size: 1rem;
+          color: #fff;
+          transform: scale(.833, .833);
+        }
+        .cost {
+          margin-top: 1.333rem;
+          color: #fff;
+          height: 1.667rem;
+          font-size: 1.4167rem;
+          margin-left: .6rem;
+        }
+      }
+    }
+  }
+  .resources {
+    text-align: center;
+    padding-top: 1.667rem;
+    padding-bottom: 10rem;
+    padding-left: 1.333rem;
+    padding-right: 1.333rem;
+    background: #fff;
+    border-top: 1px dashed #E6E6E6;
+    h3 {
+      font-size: 1.167rem;
+      font-weight: 600;
+      color: #000;
+      line-height: 1.667rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      .san {
+        display: inline-block;
+        background: url('../../assets/img/product/san.svg') no-repeat;
+        width: 2rem;
+        height: 1.5rem;
+        margin-right: .5rem;
+        z-index: 1;
+        background-size: contain;
+        vertical-align: top;
+      }
+    }
+    .van-button {
+      width: 19.083rem;
+      height: 3.333rem;
+      line-height: 3.333rem;
+      background: #F2F3FF;
+      border-color: #F2F3FF;
+      border-radius: 20px;
+      font-weight: 600;
+      color: #324BE3;
+    }
+  }
+  footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 6.67rem;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow:0px 1px 5px rgb(173, 173, 173);
+    .van-button {
+      width: 14.5883rem;
+      height: 2.5rem;
+      line-height: 2.5rem;
+      background: #3C51FF;
+      border-color: #3C51FF;
+    }
+  }
+  .select-set-meal {
+    padding: 1.25rem 1.5rem 2.5rem;
+    box-sizing: border-box;
+    text-align: center;
+    h4 {
+      height: 1.667rem;
+      font-size: 1.167rem;
+      margin-bottom: 1.25rem;
+      font-weight: 400;
+      color: #000000;
+      line-height: 1.667rem;
+      text-align: left;
+    }
+    .van-row {
+      text-align: center;
+      .van-col {
+        margin-bottom: 1.25rem;
+      }
+      span {
+        display: inline-block;
+        width: 100%;
+        height: 2.75rem;
+        line-height: 2.75rem;
+        background: #F2F2F2;
+        border-radius: .333rem;
+        color: #999;
+      }
+      .active {
+        background: #3C51FF;
+        color: #fff;
+      }
+    }
+    .purchase-button {
+      width: 20.833rem;
+      height: 3.333rem;
+      margin-top: 4.75rem;
+      line-height: 3.333rem;
+      background: #3C51FF;
+      border-color: #3C51FF;
+      border-radius: 1.667rem;
+    }
+    .van-submit-bar {
+      position: relative;
+      border-top: 1px solid #F2F2F2;
+      .van-button {
+        width: 8.333rem;
+        height: 2.75rem;
+        background: #3C51FF;
+        border-radius: 1.667rem;
+      }
+    }
+  }
+  .pay-result {
+    text-align: center;
+    padding: 1.667rem .833rem 2.5rem;
+    box-sizing: border-box;
+    h4 {
+      height: 1.833rem;
+      font-size: 1.333rem;
+      font-weight: 600;
+      color: #000;
+      height: 1.833rem;
+      margin-bottom: .8rem;
+    }
+    .van-icon {
+      font-size: 3.5rem;
+      color: #3C51FF;
+      margin-bottom: 2rem;
+    }
+    .account-area {
+      padding: .833rem 0;
+      background: #F7F7F7;
+      border-radius: .333rem;
+      p {
+        height: 2rem;
+        font-size: 1.1467rem;
+        font-weight: 400;
+        color: #000000;
+        line-height: 2rem;
+      }
+    }
+    .van-button {
+      margin-top: 1.667rem;
+      width: 9.167rem;
+      height: 3.333rem;
+      background: #3C51FF;
+      border-radius: 1.667rem;
+    }
+  }
+  .jar-popup {
+    width: 20rem;
+    padding: .75rem;
+    h3 {
+      position: relative;
+      margin-left: 1.167rem;
+      height: 1.667rem;
+      line-height: 1.667rem;
+      font-size: 1.1667rem;
+      font-weight: 600;
+      color: #000;
+      &:after {
+        content: "";
+        position: absolute;
+        width: .333rem;
+        height: 1.5rem;
+        background: #324BE3;
+        left: -.667rem;
+        border-radius: .167rem;
+      }
+    }
+    p {
+      width: 100%;
+      background: #F8F8F8;
+      margin-top: .55rem;
+      height: 3.5rem;
+      line-height: 3.5rem;
+      font-size: 1.167rem;
+      text-align: center;
+    }
+  }
+}
+</style>

@@ -1,0 +1,35 @@
+import {
+  Button,
+  Field,
+  CheckboxGroup,
+  Checkbox,
+  PasswordInput,
+  NumberKeyboard,
+  CountDown,
+  Cell,
+  CellGroup,
+  Tabbar,
+  TabbarItem,
+  Col,
+  Row
+} from 'vant'
+
+const CustomVant = {
+  install: Vue => {
+    Vue.use(Button)
+      .use(Field)
+      .use(Checkbox)
+      .use(CheckboxGroup)
+      .use(PasswordInput)
+      .use(NumberKeyboard)
+      .use(CountDown)
+      .use(Cell)
+      .use(CellGroup)
+      .use(Tabbar)
+      .use(TabbarItem)
+      .use(Col)
+      .use(Row)
+  }
+}
+
+export default CustomVant

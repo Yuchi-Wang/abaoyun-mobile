@@ -1,0 +1,82 @@
+<template>
+  <div class="main">
+    <baseHeader :header-title="headerTitle" />
+    <van-cell-group>
+      <van-cell title="昵称" label="张三" :border="false" is-link @click="editData('name')" />
+      <van-cell title="邮箱" :label="email" :value="emailBinding" :border="false" is-link @click="bindEmail" />
+      <van-cell title="手机号" label="+ 86 177****7777" value="已绑定" :border="false" is-link @click="changeBinding" />
+      <van-cell title="地址" :border="false" is-link @click="editData('addr')" />
+    </van-cell-group>
+  </div>
+</template>
+
+<script>
+import { Dialog } from 'vant'
+export default {
+  name: 'PersonalData',
+  data: () => ({
+    headerTitle: '个人资料',
+    email: '',
+    emailBinding: ''
+  }),
+  mounted() {
+    if (this.email) {
+      this.emailBinding = '已绑定'
+    } else {
+      this.emailBinding = ''
+    }
+  },
+  methods: {
+    editData(name) {
+      this.$router.push({
+        name: 'editPersonalData',
+        query: {
+          type: name
+        }
+      })
+    },
+    bindEmail() {
+      if (this.email) {
+        Dialog.confirm({
+          title: '确定解除绑定？',
+          message: '解绑邮箱账号将无法继续使用它登录阿宝云'
+        }).then(() => {
+          this.$router.push({
+            name: 'confirmBinding',
+            query: {
+              type: 'email',
+              operation: 'unbinding'
+            }
+          })
+        }).catch(() => {
+          // on cancel
+        })
+      } else {
+        this.$router.push({
+          name: 'editPersonalData',
+          query: {
+            type: 'email'
+          }
+        })
+      }
+    },
+    changeBinding() {
+      this.$router.push({
+        name: 'confirmBinding',
+        query: {
+          type: 'mobile'
+        }
+      })
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+.van-cell-group {
+  margin: .833rem;
+}
+.van-dialog__confirm, .van-dialog__confirm:active {
+  color: #0078F8!important;
+}
+</style>

@@ -1,0 +1,11 @@
+<template>
+  <div>
+    33311111111
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'My'
+}
+</script>

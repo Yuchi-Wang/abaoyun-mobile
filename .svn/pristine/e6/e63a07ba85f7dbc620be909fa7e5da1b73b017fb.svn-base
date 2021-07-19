@@ -1,0 +1,37 @@
+<template>
+  <div class="doc-main">
+    <baseHeader :header-title="headerTitle" />
+    <van-cell-group>
+      <van-cell title="阿宝技术文档" :border="false" is-link @click="handleViewAbao" />
+      <van-cell title="金融NLP技术文档" :border="false" is-link @click="handleViewNlp" />
+    </van-cell-group>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'Doc',
+  data: () => ({
+    headerTitle: '技术文档'
+  }),
+  methods: {
+    handleViewAbao() {
+      this.$router.push('/abao-doc')
+    },
+    handleViewNlp() {
+      this.$router.push('/nlp-doc')
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.van-cell-group {
+  margin: 1.25rem 1rem;
+  border-radius: .667rem;
+  .van-cell {
+    border-radius: .667rem;
+  }
+}
+</style>
+

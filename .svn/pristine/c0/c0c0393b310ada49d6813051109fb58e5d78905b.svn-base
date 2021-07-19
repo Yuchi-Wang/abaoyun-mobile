@@ -1,0 +1,27 @@
+<template>
+  <div class="product-main">
+    <baseHeader :header-title="headerTitle" />
+    <div class="banner">
+      1
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'PersonalData',
+  data: () => ({
+    headerTitle: '阿宝产品',
+    email: '',
+    emailBinding: ''
+  })
+}
+</script>
+
+<style lang="scss" scoped>
+.product-main {
+  /deep/ .base-header {
+  background: transparent!important;
+}
+}
+</style>

@@ -1,0 +1,166 @@
+<template>
+  <div class="main">
+    <div>
+      <h3>请输入验证码</h3>
+      <van-password-input
+        :value="value"
+        :mask="false"
+        :gutter="10"
+        :focused="showKeyboard"
+        :error-info="errorInfo"
+        @focus="showKeyboard = true"
+      />
+      <van-number-keyboard
+        v-model="value"
+        :show="showKeyboard"
+        :maxlength="6"
+        @blur="showKeyboard = false"
+      />
+      <span class="vc-toast">验证码已发送至您的{{ bindingType === 'mobile' ? '手机' : '邮箱' }}</span>
+      <span class="count-down-area">
+        <van-count-down v-if="isConutDownShow" :time="time" format="ss 秒重新发送" @finish="finish" />
+        <span v-else class="re-send" @click="sendMessage">重新发送</span>
+      </span>
+    </div>
+  </div>
+</template>
+
+<script>
+import { Toast } from 'vant'
+export default {
+  name: 'Vcode',
+  data: () => ({
+    value: '',
+    showKeyboard: false,
+    time: 0,
+    errorInfo: '',
+    isConutDownShow: false,
+    bindingType: '',
+    operation: ''
+  }),
+  watch: {
+    value(value) {
+      if (value.length === 6 && value !== '111111') {
+        this.errorInfo = '验证码错误，请重新输入'
+      } else if (value.length === 6 && value === '111111') {
+        if (this.bindingType === 'mobile') {
+          if (sessionStorage.getItem('pageName') === 'login') {
+            Toast.success('登录成功')
+            setTimeout(() => {
+              this.$router.replace('/')
+            }, 2000)
+          } else if (sessionStorage.getItem('pageName') === 'confirmBinding') {
+            this.$router.replace('/change-binding')
+          } else if (sessionStorage.getItem('pageName') === 'changeBinding') {
+            Toast.success('修改成功')
+            setTimeout(() => {
+              this.$router.replace('/personal-data')
+            }, 2000)
+          }
+        } else if (this.bindingType === 'email') {
+          if (this.operation === 'unbinding') {
+            Toast.success('解绑成功')
+            setTimeout(() => {
+              this.$router.replace('/personal-data')
+            }, 2000)
+          } else {
+            Toast.success('绑定成功')
+            setTimeout(() => {
+              this.$router.replace('/personal-data')
+            }, 2000)
+          }
+        }
+      }
+    }
+  },
+  mounted() {
+    this.bindingType = this.$route.query.type
+    this.operation = this.$route.query.operation
+    if (this.$fromUrl.name === 'login' ||
+      this.$fromUrl.name === 'confirmBinding' ||
+      this.$fromUrl.name === 'changeBinding') {
+      this.sendMessage()
+      this.changePage()
+    }
+  },
+  destroyed() {
+    sessionStorage.removeItem('pageName')
+  },
+  methods: {
+    finish() {
+      this.isConutDownShow = false
+    },
+    // 判定从哪个页面进入，做不同的逻辑处理
+    changePage() {
+      if (this.$fromUrl.name === 'login') {
+        sessionStorage.setItem('pageName', 'login')
+      } else if (this.$fromUrl.name === 'confirmBinding') {
+        sessionStorage.setItem('pageName', 'confirmBinding')
+      } else if (this.$fromUrl.name === 'changeBinding') {
+        sessionStorage.setItem('pageName', 'changeBinding')
+      }
+    },
+    sendMessage() {
+      this.time = 1000 * 60
+      this.isConutDownShow = true
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.main {
+  padding: 12.583rem 4rem 0;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+ > div {
+    position: relative;
+  }
+  .vc-toast {
+    position: absolute;
+    top: 8.5rem;
+    color: #000;
+    font-weight: 400;
+  }
+  .count-down-area {
+    position: absolute;
+    top: 8.3rem;
+    right: 0;
+    .van-count-down {
+      font-weight: 400;
+      color: #666;
+      font-size: 1rem;
+    }
+    .re-send {
+      display: inline-block;
+      margin-top: .25rem;
+      font-weight: 400;
+      color: #0078F8;
+      font-size: 1rem;
+      height: 1.167rem;
+      line-height: 1.167rem;
+    }
+  }
+  h3 {
+    height: 2rem;
+    font-size: 1.5rem;
+    margin-bottom: 1.667rem;
+    font-weight: 600;
+    color: #000000;
+    line-height: 2rem;
+    text-align: center;
+  }
+  .van-password-input__security li {
+    border-bottom: 1px solid #D6D6D6;
+  }
+  .van-password-input__error-info {
+    color: #FF2500;
+    font-size: 1rem;
+    margin-top: 4rem;
+  }
+}
+</style>

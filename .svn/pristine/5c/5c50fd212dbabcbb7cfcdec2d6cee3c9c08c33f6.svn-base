@@ -1,0 +1,63 @@
+<template>
+  <div>
+    <baseHeader :header-title="headerTitle" />
+    <van-cell-group>
+      <van-cell title="订单号" :border="false" :value="orderDetail.order_number" />
+      <van-cell title="订单名称" :border="false" :value="orderDetail.product_name" />
+      <van-cell title="订单数量" :border="false" :value="orderDetail.buy_num" />
+      <van-cell title="订单金额" :border="false" :value="orderDetail.payment_amount" />
+      <van-cell title="创建时间" :border="false" :value="orderDetail.createtime" />
+      <van-cell title="付款时间" :border="false" :value="orderDetail.payment_time" />
+      <van-cell title="付款人" :border="false" :value="orderDetail.payPeople" />
+    </van-cell-group>
+    <van-button v-if="orderDetail.payment_amount" type="info" @click="applyInvoice">申请开票</van-button>
+  </div>
+</template>
+
+<script>
+import { getDetail } from '@/api/order'
+export default {
+  name: 'OrderDetail',
+  data: () => ({
+    detailId: -1,
+    headerTitle: '订单详情',
+    orderDetail: {}
+  }),
+  mounted() {
+    this.detailId = this.$route.query.id
+    this.getDetail()
+  },
+  methods: {
+    applyInvoice() {
+      this.$router.push({
+        name: 'applyInvoice',
+        query: {
+          id: this.detailId,
+          type: 'apply'
+        }
+      })
+    },
+    getDetail() {
+      getDetail({ order_number: this.detailId }).then(res => {
+        this.orderDetail = res.data.data
+      })
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.van-cell-group {
+  margin: .8333rem;
+  border-radius: .6667rem;
+}
+.van-button {
+  display: block;
+  margin:3.083rem auto 0;
+  width: 20.8333rem;
+  height: 3.333rem;
+  line-height: 3.333rem;
+  background: #3C51FF;
+  border-radius: 1.6667rem;
+}
+</style>

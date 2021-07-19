@@ -1,0 +1,159 @@
+<template>
+  <div>
+    <baseHeader :header-title="headerTitle" />
+    <div class="chat-content">
+      <div>
+        <div class="chat-item" v-for="(item, index) in chatContent" :key="index">
+          <!-- 对方 -->
+          <div class="word" v-if="!item.mineMsg">
+            <img src="../../assets/img/user/my/system_avatar.png">
+            <div class="info-content">{{ item.contactText }}</div>
+          </div>
+          <!-- 我的 -->
+          <div class="word-my" v-else>
+            <div class="info-content">{{ item.contactText }}</div>
+            <img src="../../assets/img/user/my/user.svg">
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer ref="footer">
+      <van-field
+        v-model="value"
+        type="textarea"
+        autosize
+        rows="1"
+        clearable
+        @focus="inputFocus"
+        @blur="inputBlur"
+      />
+      <van-button ref="submitButton" type="primary" @click="submit">发送</van-button>
+    </footer>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'ChatRoom',
+  data: () => ({
+    headerTitle: '阿宝',
+    value: '',
+    chatContent: [
+      {
+        mineMsg: true,
+        contactText: '测试测试测测试测试测试测测测试测试测测试测试测试测测'      
+      },
+      {
+        mineMsg: false,
+        contactText: '测试测试测测试测试测试测测测试测试测测试测试测试测测'      
+      },
+      {
+        mineMsg: true,
+        contactText: '测试测试测测试测试测试测测'      
+      }
+    ]
+  }),
+  methods: {
+    inputFocus() {
+      this.$refs.footer.setAttribute('style', 'padding-bottom: 1rem')
+      this.$refs.submitButton.setAttribute('style', 'bottom: 1rem')
+    },
+    inputBlur() {
+      this.$refs.footer.setAttribute('style', 'bottom: 0')
+      this.$refs.submitButton.setAttribute('style', 'bottom: 3rem')
+    },
+    submit() {
+      alert(111)
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 1rem 3rem 1rem;
+  box-sizing: border-box;
+  background: #e8e8e8;
+  z-index: 9999;
+  .van-cell {
+   width: 80%;
+  }
+  .van-field {
+    border-radius: .4rem;
+  }
+  .van-button {
+    position: absolute;
+    right: 1rem;
+    bottom: 3rem;
+    border-radius: .4rem;
+  }
+}
+.chat-content {
+  padding: 1.25rem 1.25rem 8rem 1.25rem;
+  height: calc(100% - 13rem);
+  overflow: auto;
+  .word {
+    display: flex;
+    margin-bottom: .583rem;
+    img {
+      width: 3.3rem;
+      height: 3.3rem;
+      border-radius: 50%;
+    }
+    .info-content {
+      position: relative;
+      max-width: 68%;
+      margin-top: .667rem;
+      margin-left: .833rem;
+      padding: .833rem;
+      background: #fff;
+      border-radius: .333rem;
+      line-height: 1.667rem;
+      font-size: 1.167rem;
+      &:before {
+        position: absolute;
+        left: -.667rem;
+        top: .667rem;
+        content: '';
+        border-right: .833rem solid #FFF;
+        border-top: .667rem solid transparent;
+        border-bottom: .667rem solid transparent;
+      }
+    }    
+  }
+ 
+  .word-my {
+    display: flex;
+    justify-content:flex-end;
+    margin-bottom: .583rem;
+    img{
+       width: 3.3rem;
+       height: 3.3rem;
+       border-radius: 50%;
+     }
+    .info-content {
+      position: relative;
+      max-width: 68%;
+      padding: .833rem;
+      margin: .667rem .833rem 0 0;
+      background: #A3C3F6;
+      line-height: 1.667rem;
+      font-size: 1.167rem;
+      border-radius: .333rem;
+      &:after {
+        position: absolute;
+        right: -.667rem;
+        top: .667rem;
+        content: '';
+        border-left: .833rem solid #A3C3F6;
+        border-top: .667rem solid transparent;
+        border-bottom: .667rem solid transparent;
+      }
+    }
+  }
+}
+</style>
