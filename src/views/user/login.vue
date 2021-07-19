@@ -43,19 +43,21 @@
           placeholder="请输入密码"
         />
       </van-tab>
-      <p v-if="active === 2" class="forgot-password">忘记密码？</p>
+      <p v-if="active === 2" class="forgot-password" @click="forgetPassword">忘记密码？</p>
     </van-tabs>
     <!-- <van-checkbox v-model="checked" class="policy">
       请阅读并同意 <span>《用户协议》</span>和<span>《隐私政策》</span>
     </van-checkbox> -->
     <van-button v-if="active === 0 || active === 1" round type="info" @click="getVcCode">获取验证码</van-button>
-    <van-button v-if="active === 2" round type="info">登录</van-button>
+    <van-button v-if="active === 2" round type="info" @click="login">登录</van-button>
     <p class="return-home" @click="turnBack">返回首页</p>
   </div>
 </template>
 
 <script>
 import { Toast } from 'vant'
+import { setToken } from '@/utils/auth'
+import { passwordLogin } from '@/api/user'
 export default {
   name: 'Login',
   data: () => ({
@@ -119,6 +121,22 @@ export default {
           })
         }
       }
+    },
+    login() {
+      const params = {
+        phone_email: this.account,
+        password: this.password
+      }
+      passwordLogin(params).then(res => {
+        if (res.data.code === 200) {
+          localStorage.setItem('userCode', res.data.data.user_code)
+          setToken(res.data.data.token)
+          this.$router.replace(this.redirect)
+        }
+      })
+    },
+    forgetPassword() {
+      this.$router.push('/forgot-password')
     }
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div>
     <baseHeader :header-title="headerTitle" />
-     <van-cell-group>
+     <van-cell-group v-if="!isSetPassword">
       <van-field v-model="originPassword" type="password" label="请输入原密码" maxlength="16" placeholder="请输入当前登录密码" />
     </van-cell-group>
     <van-cell-group>
@@ -12,15 +12,59 @@
 </template>
 
 <script>
+import { Toast } from 'vant'
+import { editUserInfo, getUserInfo } from '@/api/user'
 export default {
   name: 'EditPassword',
   data: () => ({
-    headerTitle: '修改密码',
+    headerTitle: '',
     originPassword: '',
-    newPassword: ''
+    newPassword: '',
+    isSetPassword: false,
+    userDetail: {}
   }),
+  mounted() {
+    this.init()
+  },
   methods: {
-    save() {}
+    init() {
+      this.isSetPassword = this.$route.query.operation === 'set' ? true : false
+      this.headerTitle = this.isSetPassword ? '设置密码' : '修改密码'
+      if (!this.isSetPassword) {
+        getUserInfo({ user_code: localStorage.getItem('userCode') }).then(res => {
+          this.userDetail = res.data.data
+        })
+      }
+    },
+    editPassword() {
+      const params = {
+        user_code: localStorage.getItem('userCode'),
+        user_password: this.newPassword
+      }
+      editUserInfo(params).then(res => {
+        if (res.data.code === 200) {
+          Toast('设置密码成功')
+          this.$router.replace('/personal-data')
+        }
+      })
+    },
+    save() {
+      if (this.newPassword === '') {
+        Toast('密码不能为空')
+      } else if (this.newPassword.length < 6) {
+        Toast('密码长度不能低于6位')
+      } else {
+        if (this.isSetPassword) {
+          this.editPassword()
+        } else {
+          if (this.originPassword != this.userDetail.user_password) {
+            Toast('原密码错误')
+          } else {
+            this.editPassword()
+          }
+        } 
+      }
+    }
   }
 }
 </script>

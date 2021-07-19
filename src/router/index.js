@@ -185,7 +185,7 @@ const constantRoutes = [
     name: 'editPassword'
   },
   {
-    path: '/fotgot-password',
+    path: '/forgot-password',
     component: _resolve('user/forgotPassword'),
     name: 'forgotPassword'
   }

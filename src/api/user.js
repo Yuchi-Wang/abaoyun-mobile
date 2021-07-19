@@ -106,3 +106,21 @@ export function cancelAccount(userCode) {
     method: 'get'
   })
 }
+
+// 密码登录
+export function passwordLogin(data) {
+  return request({
+    url: 'loginType/phoneOrEmailPasswordLogin',
+    method: 'post',
+    data
+  })
+}
+
+// 找回密码
+export function foundPassword(data) {
+  return request({
+    url: 'loginType/phoneOrEmailPasswordRetrieve',
+    method: 'post',
+    data
+  })
+}

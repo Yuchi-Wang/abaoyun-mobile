@@ -6,7 +6,7 @@
       <van-cell title="邮箱" :label="email" :value="email ? '已绑定' : ''" :border="false" is-link @click="bindEmail" />
       <van-cell title="手机号" :label="mobile" :value="mobile ? '已绑定' : ''" :border="false" is-link @click="changeBinding" />
       <van-cell title="地址" :label="userDetail.adress" :border="false" is-link @click="editData('addr')" />
-      <van-cell title="修改密码" :border="false" is-link @click="editPassword" />
+      <van-cell :title="isHasPassword ? '修改密码': '设置密码'" :border="false" is-link @click="editPassword" />
     </van-cell-group>
     <van-button type="warning" @click="cancelAccount">注销账户</van-button>
   </div>
@@ -24,7 +24,8 @@ export default {
     mobile: '',
     userCode: '',
     nickname: '',
-    userDetail: {}
+    userDetail: {},
+    isHasPassword: false
   }),
   mounted() {
     this.getPersonal()
@@ -36,7 +37,7 @@ export default {
         message: '删除您的阿宝云账户，用户数据将无法恢复'
       }).then(() => {
         cancelAccount(localStorage.getItem('userCode')).then(res => {
-          if (res.code == 200) {
+          if (res.code === 200) {
             Toast('注销成功')
             localStorage.clear()
             this.$router.replace('/')
@@ -55,6 +56,7 @@ export default {
         this.email = this.userDetail.email
         this.mobile = this.userDetail.phone
         this.nickname = this.userDetail.nickname
+        this.isHasPassword = this.userDetail.user_password === '' ? false : true
       })
     },
     editData(name) {
@@ -105,7 +107,12 @@ export default {
       }
     },
     editPassword() {
-      this.$router.push('/edit-password')
+      this.$router.push({
+        name: 'editPassword',
+        query: {
+          operation: this.isHasPassword ? 'edit' : 'set'
+        }
+      })
     }
   }
 }
