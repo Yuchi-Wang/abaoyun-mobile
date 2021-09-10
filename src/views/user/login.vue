@@ -17,6 +17,7 @@
           class="mobile"
           type="tel"
           maxlength="11"
+          :border ="false"
           placeholder="请输入手机号"
         />
       </van-tab>
@@ -25,14 +26,16 @@
           v-model="email"
           class="mobile"
           maxlength="50"
+          :border ="false"
           placeholder="请输入邮箱号"
         />
       </van-tab>
-      <van-tab title="密码登录">
+      <van-tab title="账号登录">
         <van-field
           v-model="account"
           class="mobile"
           maxlength="50"
+          :border ="false"
           placeholder="请输入手机/邮箱号"
         />
         <van-field
@@ -40,6 +43,7 @@
           type="password"
           class="mobile"
           maxlength="16"
+          :border ="false"
           placeholder="请输入密码"
         />
       </van-tab>

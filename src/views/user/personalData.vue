@@ -56,7 +56,7 @@ export default {
         this.email = this.userDetail.email
         this.mobile = this.userDetail.phone
         this.nickname = this.userDetail.nickname
-        this.isHasPassword = this.userDetail.user_password === '' ? false : true
+        this.isHasPassword = !!this.userDetail.user_password
       })
     },
     editData(name) {

@@ -1,11 +1,11 @@
 <template>
   <div>
     <baseHeader :header-title="headerTitle" />
-     <van-cell-group v-if="!isSetPassword">
+    <van-cell-group v-if="!isSetPassword">
       <van-field v-model="originPassword" type="password" label="请输入原密码" maxlength="16" placeholder="请输入当前登录密码" />
     </van-cell-group>
     <van-cell-group>
-      <van-field v-model="newPassword" type="password" label="确认新密码" maxlength="16" placeholder="确认新密码" />
+      <van-field v-model="newPassword" type="password" :label="label" maxlength="16" :placeholder="'请' + label" />
     </van-cell-group>
     <van-button round type="info" @click="save">保存</van-button>
   </div>
@@ -21,15 +21,18 @@ export default {
     originPassword: '',
     newPassword: '',
     isSetPassword: false,
-    userDetail: {}
+    userDetail: {},
+    label: '',
+    passwordTest: /^(?=.*[0-9].*)(?=.*[A-Z].*)(?=.*[a-z].*).{6,16}$/
   }),
   mounted() {
     this.init()
   },
   methods: {
     init() {
-      this.isSetPassword = this.$route.query.operation === 'set' ? true : false
+      if (this.$route.query.operation === 'set') { this.isSetPassword = true }
       this.headerTitle = this.isSetPassword ? '设置密码' : '修改密码'
+      this.label = this.isSetPassword ? '设置新密码' : '确认新密码'
       if (!this.isSetPassword) {
         getUserInfo({ user_code: localStorage.getItem('userCode') }).then(res => {
           this.userDetail = res.data.data
@@ -51,18 +54,20 @@ export default {
     save() {
       if (this.newPassword === '') {
         Toast('密码不能为空')
-      } else if (this.newPassword.length < 6) {
-        Toast('密码长度不能低于6位')
+      } else if (!this.passwordTest.test(this.newPassword)) {
+        Toast('密码长度应在6到16为之间且至少包含一个大写字母')
       } else {
         if (this.isSetPassword) {
           this.editPassword()
         } else {
-          if (this.originPassword != this.userDetail.user_password) {
+          if (this.originPassword !== this.userDetail.user_password) {
             Toast('原密码错误')
+          } else if (this.newPassword === this.userDetail.user_password) {
+            Toast('新密码不能和原密码相同')
           } else {
             this.editPassword()
           }
-        } 
+        }
       }
     }
   }

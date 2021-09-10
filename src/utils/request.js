@@ -12,8 +12,16 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     const token = getToken()
+    const ip = sessionStorage.getItem('ip')
+    const userCode = localStorage.getItem('userCode')
     if (token) {
       config.headers['token'] = token
+    }
+    if (ip) {
+      config.headers['ipAdress'] = ip
+    }
+    if (userCode) {
+      config.headers['userCode'] = userCode
     }
     return config
   },

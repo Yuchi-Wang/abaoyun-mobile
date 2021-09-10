@@ -94,30 +94,30 @@
       <van-button round @click="getAbaoDoc">技术文档</van-button>
     </div>
     <footer>
-      <van-button round type="info" @click="freeUse">免费试用</van-button>
+      <van-button round type="info" @click="freeUse">购买</van-button>
     </footer>
     <!-- 选择套餐 -->
-    <van-popup v-model="useShow" position="bottom" class="select-set-meal">
+    <van-popup v-model="useShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
       <h4>选择套餐</h4>
       <van-row gutter="10">
         <van-col v-for="(item, index) in mealList" :key="item.id" span="8">
-          <span :class="{ active: index === activeIndex }">{{ item.name }}</span>
+          <span :class="{ active: index === activeIndex }" @click="select(index)">{{ item.name }}</span>
         </van-col>
       </van-row>
       <van-button class="purchase-button" type="info" @click="purchase">购买</van-button>
     </van-popup>
     <!-- 选择付款方式 -->
-    <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal">
+    <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
       <h4>付款方式</h4>
       <van-row gutter="10">
         <van-col v-for="(item, index) in purchaseList" :key="item.id" span="8">
-          <span :class="{ active: index === activeIndex }">{{ item.name }}</span>
+          <span :class="{ active: index === paymentIndex }" @click="selectPayment(index)">{{ item.name }}</span>
         </van-col>
       </van-row>
-      <van-submit-bar :price="0" :loading="submitShow" button-text="提交" @submit="submit" />
+      <van-submit-bar :price="totalPrice" :loading="submitShow" button-text="提交" @submit="submit" />
     </van-popup>
     <!-- 支付结果页 -->
-    <van-popup v-model="resultShow" position="bottom" class="pay-result">
+    <van-popup v-model="resultShow" position="bottom" class="pay-result" @click-overlay="resetPayForm">
       <h4>支付成功</h4>
       <van-icon name="passed" />
       <div class="account-area">
@@ -125,7 +125,7 @@
           支付金额：
           <span>￥0</span>
         </p>
-        <p>付款方式：支付宝</p>
+        <p>付款方式：{{ payName }}</p>
       </div>
       <van-button type="info" @click="jarDownLoad">jar包下载</van-button>
     </van-popup>
@@ -139,7 +139,7 @@
 
 <script>
 import { getDetail } from '@/api/product'
-import { aliPay } from '@/api/payment'
+import { aliPay, weChatPay } from '@/api/payment'
 import { createOrder } from '@/api/order'
 export default {
   name: 'PersonalData',
@@ -205,40 +205,55 @@ export default {
     mealList: [
       {
         id: 1,
-        name: '免费试用'
+        name: '免费试用',
+        times: 0
       },
       {
         id: 2,
-        name: '500次'
+        name: '500次',
+        times: 500
       },
       {
         id: 3,
-        name: '5000次'
+        name: '5000次',
+        times: 5000
       },
       {
         id: 4,
-        name: '10000次'
+        name: '10000次',
+        times: 10000
       },
       {
         id: 5,
-        name: '50000次'
+        name: '50000次',
+        times: 50000
       },
       {
         id: 6,
-        name: '150000次'
+        name: '150000次',
+        times: 150000
       }
     ],
     purchaseList: [
       {
-        id: 1,
+        id: '1',
         name: '支付宝'
+      },
+      {
+        id: '2',
+        name: '微信'
       }
     ],
     activeIndex: 0,
     submitShow: false,
     resultShow: false,
     productDetail: {},
-    paymentAmount: 0
+    paymentAmount: 0,
+    paymentIndex: 0,
+    totalPrice: 0,
+    paymentType: '1',
+    totalTimes: 0,
+    payName: ''
   }),
   mounted() {
     this.getProductDetail()
@@ -247,12 +262,29 @@ export default {
     getAbaoDoc() {
       this.$router.push('/abao-doc')
     },
+    resetPayForm() {
+      setTimeout(() => {
+        this.activeIndex = 0
+        this.paymentIndex = 0
+        this.paymentType = '1'
+        this.totalTimes = 0
+        this.payName = ''
+      }, 300)
+    },
     getProductDetail() {
       getDetail({
         product_Id: this.$route.query.id
       }).then(res => {
         this.productDetail = res.data.data
       })
+    },
+    select(index) {
+      this.activeIndex = index
+    },
+    selectPayment(index) {
+      this.paymentIndex = index
+      this.paymentType = this.purchaseList[index].id
+      this.payName = this.purchaseList[index].name
     },
     handleExperience() {
       this.$router.push('/chat-room')
@@ -261,6 +293,8 @@ export default {
       this.useShow = true
     },
     purchase() {
+      this.totalTimes = this.mealList[this.activeIndex].times
+      this.totalPrice = this.productDetail.price * this.totalTimes
       this.useShow = false
       this.purchaseShow = true
     },
@@ -268,29 +302,31 @@ export default {
       const params = {
         phone: '',
         userID: localStorage.getItem('userCode'),
-        paymentType: '1',
+        paymentType: this.paymentType,
         paymentAmount: this.paymentAmount,
         product_Id: this.$route.query.id
       }
-      aliPay(params).then(res => {
-        if (res.data.code === 200 && res.data.msg) {
+      this.handlePay(this.paymentType === '1' ? aliPay : weChatPay, params)
+    },
+    handlePay(methods, params) {
+      methods(params).then(res => {
+        if (res.data.code === 200) {
           const orderParams = {
             product_name: '诚龙阿宝',
-            price_number: '0',
-            payment_amount: '0',
-            payment_type: '1',
-            order_status: '1',
-            order_amount: '0',
+            price_number: this.productDetail.price,
+            payment_amount: this.totalPrice,
+            payment_type: this.paymentType,
             phone: '',
             user_code: localStorage.getItem('userCode'),
             product_id: this.$route.query.id,
-            buy_num: 1,
+            buy_num: this.totalTimes + '',
             totalcount: 1
           }
           createOrder(orderParams).then(res => {
             if (res.data.code === 200) {
               this.purchaseShow = false
               this.resultShow = true
+              this.resetPayForm()
               setTimeout(() => {
                 this.$router.push('/order-list')
               }, 2000)

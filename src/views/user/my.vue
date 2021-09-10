@@ -13,10 +13,10 @@
           span="6"
           @click="getDetail(item.path)"
         >
-          <div
-            class="user-list-bg"
-            :style="{backgroundImage: 'url('+ item.src +')'}"
-          />
+          <van-badge v-if="item.title === '消息' && notRead" :content="notRead">
+            <div class="user-list-bg" :style="{backgroundImage: 'url('+ item.src +')'}" />
+          </van-badge>
+          <div v-else class="user-list-bg" :style="{backgroundImage: 'url('+ item.src +')'}" />
           <p>{{ item.title }}</p>
         </van-col>
       </van-row>
@@ -65,7 +65,8 @@ export default {
       }
     ],
     userName: '',
-    userToken: ''
+    userToken: '',
+    notRead: 0
   }),
   mounted() {
     this.getPersonal()
@@ -84,6 +85,7 @@ export default {
           user_code: localStorage.getItem('userCode')
         }
         getUserInfo(params).then(response => {
+          this.notRead = Number(response.data.data.has_read)
           this.userName = response.data.data.nickname
         })
       }
@@ -144,6 +146,13 @@ export default {
       align-items:center;
       .van-col {
         text-align: center;
+        /deep/ .van-badge {
+          border: 1px solid #ee0a24;
+        }
+        /deep/.van-badge--fixed {
+          top: .2rem;
+          right: .2rem;
+        }
         .user-list-bg {
           width: 3.333rem;
           height: 3.333rem;

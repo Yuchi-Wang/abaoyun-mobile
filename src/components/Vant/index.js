@@ -25,7 +25,8 @@ import {
   Tabs,
   SubmitBar,
   Empty,
-  picker
+  picker,
+  Badge
 } from 'vant'
 
 const CustomVant = {
@@ -56,6 +57,7 @@ const CustomVant = {
       .use(Tabs)
       .use(SubmitBar)
       .use(Empty)
+      .use(Badge)
       .use(picker)
   }
 }

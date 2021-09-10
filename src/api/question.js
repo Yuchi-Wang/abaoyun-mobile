@@ -8,7 +8,7 @@ export function getList(data) {
     data
   })
 }
-  
+
 // 获取详情
 export function getDetail(data) {
   return request({

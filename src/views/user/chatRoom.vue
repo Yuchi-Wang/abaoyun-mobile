@@ -125,13 +125,13 @@ export default {
       })
       this.value = ''
       const params = {
-        ToUserName: '',
-        FromUserName: this.phone,
-        MsgType: 'text',
-        Content: subContent,
-        AppId: '',
-        SourceType: 'phone',
-        Authorization: '',
+        tousername: 'abao',
+        fromusername: this.phone,
+        msgtype: 'Text',
+        content: subContent,
+        appid: 'systex_h5',
+        sourcetype: 'phone',
+        authorization: 'h5',
         Time: new Date().getTime()
       }
       const url = `${this.abaoBaseUrl}/chat`

@@ -12,6 +12,11 @@
     <div id="app"></div>
   </body>
 </html>
+<!-- 获取ip地址 -->
+<script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
+<script>
+  sessionStorage.setItem('ip', returnCitySN.cip)
+</script>
 <script>
 // 动态计算rem大小，已宽度375为基准，1rem为12px
 ((doc, win) => {
