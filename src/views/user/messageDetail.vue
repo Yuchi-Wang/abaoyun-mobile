@@ -1,7 +1,7 @@
 <template>
   <div class="message-detail">
     <baseHeader :header-title="headerTitle" />
-    <h4>{{ message.updatetime }}</h4>
+    <h4 v-if="message.createtime">{{ message.createtime.substring(0, message.createtime.length - 2) }}</h4>
     <van-row>
       <van-col span="3">
         <div class="message-icon" />
@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { getDetail } from '@/api/message'
+import { getDetail, updateInfo } from '@/api/message'
 export default {
   name: 'MessageDetail',
   data: () => ({
@@ -31,13 +31,18 @@ export default {
   },
   methods: {
     getMessageDetail() {
-      const params = {
-        information_id: this.detailId,
-        has_read: 1
-      }
+      const params = { information_id: this.detailId }
       getDetail(params).then(res => {
         this.message = res.data.data
+        this.hasReadInfo()
       })
+    },
+    hasReadInfo() {
+      const params = {
+        information_id: this.detailId,
+        has_read: '1'
+      }
+      updateInfo(params).then(res => {})
     }
   }
 }

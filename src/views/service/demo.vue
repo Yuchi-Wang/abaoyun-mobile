@@ -1,7 +1,8 @@
+<!-- 此文件只做演示扣次数，非正式使用环境 2021-9-28 -->
 <template>
   <div>
     <baseHeader :header-title="headerTitle" />
-    <div class="chat-content">
+    <div ref="chatContent" class="chat-content">
       <div>
         <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
           <!-- 对方 -->
@@ -32,91 +33,48 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import { Toast } from 'vant'
-import { post } from '@/utils/request'
-import { getUserInfo } from '@/api/user'
-Vue.prototype.$post = post
+import { getChatDialogue, getChatList } from '@/api/service'
 export default {
   name: 'ChatRoom',
   data: () => ({
     headerTitle: '阿宝',
     value: '',
     chatContent: [],
-    equipment: '',
-    phone: '',
-    abaoBaseUrl: 'http://ybao.todaybond.cn/dxwx'
+    equipment: ''
   }),
   mounted() {
-    this.checkEquipment()
-    this.getUserPhone()
+    this.getChatList()
+    this.scrollToBottom()
+  },
+  updated() {
+    this.scrollToBottom()
   },
   methods: {
-    checkEquipment() {
-      const os = (function() {
-        const ua = navigator.userAgent
-        const isWindowsPhone = /(?:Windows Phone)/.test(ua)
-        const isSymbian = /(?:SymbianOS)/.test(ua) || isWindowsPhone
-        const isAndroid = /(?:Android)/.test(ua)
-        const isFireFox = /(?:Firefox)/.test(ua)
-        const isChrome = /(?:Chrome|CriOS)/.test(ua)
-        const isTable = /(?:iPad|PlayBook)/.test(ua) || (isAndroid && !/(?:Mobile)/.test(ua)) || ((isFireFox || isChrome) && /(?:Tablet)/.test(ua))
-        const isPhone = /(?:iPhone)/.test(ua) && !isTable
-        const isPc = !isPhone && !isAndroid && !isSymbian
-        return {
-          isTable: isTable,
-          isPhone: isPhone,
-          isAndroid: isAndroid,
-          isPc: isPc
-        }
-      }())
-      if (os.isAndroid || os.isPhone) {
-        this.quipment = 'phone'
-      } else if (os.isTable) {
-        this.quipment = 'ipad'
-      } else if (os.isPc) {
-        this.quipment = 'Intnet'
-      }
-    },
-    getUserPhone() {
-      const params = { user_code: localStorage.getItem('userCode') }
-      getUserInfo(params).then(response => {
-        this.phone = response.data.data.phone
-        this.loginAbao()
-      })
-    },
-    loginAbao() {
-      if (this.phone) {
-        const params = {
-          phone: this.phone,
-          appid: 'systex_chat'
-        }
-        const url = `${this.abaoBaseUrl}/chatRegister`
-        this.$post(url, params).then(res => {
-          if (res.code === '0') {
-            return Promise.resolve(response)
-          } else if (res.code === '-404' && res.erormsg === '重复注册') {
-            return Promise.reject(res)
-          } else {
-            Toast(res.erormsg)
-          }
-        })
-      } else {
-        Toast('此操作需绑定您的手机号')
-        setTimeout(() => {
-          this.$router.push({
-            name: 'changeBinding',
-            query: {
-              redirect: '/chat-room'
-            }
-          })
-        }, 1000)
-      }
-    },
     inputBlur() {
       if (this.value !== '') {
         this.submit()
       }
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const container = this.$el.querySelector('.chat-content')
+        container.scrollTop = container.scrollHeight
+      })
+    },
+    getChatList() {
+      getChatList({ user_code: localStorage.getItem('userCode') }).then(res => {
+        res.data.data.list.map(item => {
+          this.chatContent.push({
+            mineMsg: true,
+            contactText: item.send_content
+          })
+          this.chatContent.push({
+            mineMsg: false,
+            contactText: item.receive_content
+          })
+        })
+      })
     },
     submit() {
       const subContent = this.value
@@ -126,24 +84,18 @@ export default {
       })
       this.value = ''
       const params = {
-        tousername: 'abao',
-        fromusername: this.phone,
-        msgtype: 'Text',
-        content: subContent,
-        appid: 'systex_h5',
-        sourcetype: 'phone',
-        authorization: 'h5',
-        time: new Date().getTime()
+       fromusername: localStorage.getItem('userCode'),
+       content: subContent
       }
-      const url = `${this.abaoBaseUrl}/chat`
-      this.$post(url, params).then(res => {
-        if (res.code === '0') {
+      getChatDialogue(params).then(res => {
+        const result = res.data.data
+        if (result.code === '0') {
           this.chatContent.push({
             mineMsg: false,
-            contactText: res.content
+            contactText: result.content
           })
         } else {
-          Toast(res.erormsg)
+          Toast(res.data.msg)
         }
       })
     }

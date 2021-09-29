@@ -26,3 +26,12 @@ export function deleteMessage(data) {
     data
   })
 }
+
+// 更新消息
+export function updateInfo(data) {
+  return request({
+    url: '/InformationManage/updateInformation',
+    method: 'post',
+    data
+  })
+}

@@ -188,6 +188,21 @@ const constantRoutes = [
     path: '/forgot-password',
     component: _resolve('user/forgotPassword'),
     name: 'forgotPassword'
+  },
+  {
+    path: '/recharge',
+    component: _resolve('user/recharge'),
+    name: 'recharge'
+  },
+  {
+    path: '/history-bill',
+    component: _resolve('user/historyBill'),
+    name: 'historyBill'
+  },
+  {
+    path: '/abao-serve',
+    component: _resolve('service/demo'),
+    name: 'serviceDemo'
   }
 ]
 

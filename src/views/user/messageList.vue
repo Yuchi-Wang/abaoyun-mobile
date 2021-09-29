@@ -1,7 +1,7 @@
 <template>
   <div class="doc-main">
     <baseHeader :header-title="headerTitle" />
-    <van-pull-refresh v-if="messageList.length" v-model="isRefrshLoading" @refresh="onRefresh">
+    <van-pull-refresh v-if="messageList.length" v-model="isRefreshLoading" @refresh="onRefresh">
       <van-list
         v-model="listLoading"
         :finished="listFinished"
@@ -20,13 +20,13 @@
                 <div class="message-icon" />
               </van-col>
               <van-col span="16">
-                <h4 class="type">{{ item.information_title }}</h4>
+                <h4 class="type">{{ item.information_name }}</h4>
                 <p class="people">
                   {{ item.content }}
                 </p>
               </van-col>
               <van-col span="6">
-                <p class="date">{{ item.updatetime.substring(0, 10) }}</p>
+                <p class="date">{{ item.createtime.substring(0, 10) }}</p>
               </van-col>
             </van-row>
           </div>
@@ -46,7 +46,7 @@ export default {
   name: 'MessageList',
   data: () => ({
     headerTitle: '我的消息',
-    isRefrshLoading: false,
+    isRefreshLoading: false,
     listLoading: false,
     listFinished: false,
     messageList: [],
@@ -61,9 +61,9 @@ export default {
   },
   methods: {
     onLoad() {
-      if (this.isRefrshLoading) {
+      if (this.isRefreshLoading) {
         this.messageList = []
-        this.isRefrshLoading = false
+        this.isRefreshLoading = false
       } else {
         if (this.hasNextPage) {
           setTimeout(() => {
@@ -109,7 +109,7 @@ export default {
       setTimeout(() => {
         this.messageList = []
         this.pageIndex = 1
-        this.isRefrshLoading = false
+        this.isRefreshLoading = false
         this.listFinished = false
         this.getMessageList()
       }, 1000)

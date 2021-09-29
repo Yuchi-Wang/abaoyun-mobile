@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import '@/assets/css/reset.css'
+import 'default-passive-events'
 import CustomVant from '@/components/Vant'
 import baseHeader from '@/components/Common/BaseHeader'
 Vue.prototype.$imgUrl = process.env.VUE_APP_IMG_URL

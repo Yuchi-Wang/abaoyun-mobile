@@ -1,10 +1,7 @@
 <template>
   <div class="doc-main">
-    <div class="order-header">
-      <i class="turn-back-icon" @click="turnBack" />
-      <van-field v-model="value" maxlength="25" placeholder="请输入订单号" />
-    </div>
-    <van-pull-refresh v-if="orderList.length" v-model="isRefreshLoading" @refresh="onRefresh">
+    <baseHeader :header-title="headerTitle" />
+    <van-pull-refresh v-if="billList.length" v-model="isRefreshLoading" @refresh="onRefresh">
       <van-list
         v-model="listLoading"
         :finished="listFinished"
@@ -12,24 +9,20 @@
         @load="onLoad"
       >
         <van-swipe-cell
-          v-for="(item, index) in orderList"
+          v-for="(item, index) in billList"
           :key="item.id"
           :name="index"
           :before-close="beforeClose"
         >
-          <div class="list" @click="getDetail(item.order_number)">
+          <div class="list">
             <van-row gutter="10">
               <van-col span="17">
-                <p class="order-no">订单号：{{ item.order_number }}</p>
-                <h4 class="name">{{ item.product_name }}</h4>
-                <p class="people">
-                  <span>支付人</span>
-                  {{ item.payPeople }}
-                </p>
+                <p class="order-no">账单号：{{ item.pay_id }}</p>
+                <h4 class="name">平台充值</h4>
               </van-col>
               <van-col span="7">
-                <p class="order-price">订单金额（元）</p>
-                <h4 class="price">{{ item.payment_amount }}</h4>
+                <p class="order-price">充值金额（元）</p>
+                <h4 class="price">{{ item.money }}</h4>
               </van-col>
             </van-row>
           </div>
@@ -39,35 +32,29 @@
         </van-swipe-cell>
       </van-list>
     </van-pull-refresh>
-    <van-empty v-if="emptyShow" description="暂无相关订单信息" />
+    <van-empty v-if="emptyShow" description="暂无相关账单信息" />
   </div>
 </template>
 
 <script>
 import { Toast, Dialog } from 'vant'
-import { getList, deleteOrder } from '@/api/order'
+import { getPayAccountList, deletePayAccount } from '@/api/user'
 export default {
-  name: 'OrderList',
+  name: 'billList',
   data: () => ({
-    value: '',
+    headerTitle: '历史账单',
     isRefreshLoading: false,
     listLoading: false,
     listFinished: false,
-    orderList: [],
+    billList: [],
     isReflash: false,
     hasNextPage: false,
     pageIndex: 1,
-    pageSize: 8,
+    pageSize: 9,
     emptyShow: false
   }),
-  watch: {
-    value() {
-      this.orderList = []
-      this.getOrderList()
-    }
-  },
   mounted() {
-    this.getOrderList()
+    this.getBillList()
   },
   methods: {
     turnBack() {
@@ -77,20 +64,19 @@ export default {
         this.$router.back()
       }
     },
-    getOrderList() {
+    getBillList() {
       const params = {
         pageIndex: this.pageIndex,
         user_code: localStorage.getItem('userCode'),
-        pageSize: this.pageSize,
-        order_number: this.value
+        pageSize: this.pageSize
       }
-      getList(params).then(res => {
+      getPayAccountList(params).then(res => {
         this.isReflash = true
         this.listLoading = false
         const responseData = res.data.data
         if (responseData && responseData.list.length) {
           for (let i = 0; i < responseData.list.length; i++) {
-            this.orderList.push(responseData.list[i])
+            this.billList.push(responseData.list[i])
           }
           this.hasNextPage = responseData.hasNextPage
         } else {
@@ -101,13 +87,13 @@ export default {
     },
     onLoad() {
       if (this.isRefreshLoading) {
-        this.orderList = []
+        this.billList = []
         this.isRefreshLoading = false
       } else {
         if (this.hasNextPage) {
           setTimeout(() => {
             this.pageIndex++
-            this.getOrderList()
+            this.getBillList()
           }, 500)
         } else {
           this.listLoading = false
@@ -115,23 +101,14 @@ export default {
         }
       }
     },
-    getDetail(index) {
-      this.$router.push({
-        name: 'orderDetail',
-        query: {
-          id: index
-        }
-      })
-    },
     onRefresh() {
       this.isReflash = false
       setTimeout(() => {
-        this.orderList = []
+        this.billList = []
         this.pageIndex = 1
-        this.order_number = ''
         this.isRefreshLoading = false
         this.listFinished = false
-        this.getOrderList()
+        this.getBillList()
       }, 1000)
       setTimeout(() => {
         this.isReflash ? Toast('刷新成功') : Toast('刷新失败')
@@ -148,11 +125,11 @@ export default {
           Dialog.confirm({
             message: '确定删除吗？'
           }).then(() => {
-            const orderId = this.orderList[name].order_number
-            deleteOrder({ order_number: orderId }).then(res => {
+            const payId = this.billList[name].pay_id
+            deletePayAccount({ pay_id: payId }).then(res => {
               Toast(res.data.msg)
-              this.orderList.splice(name, 1)
-              if (this.orderList.length === 0) {
+              this.billList.splice(name, 1)
+              if (this.billList.length === 0) {
                 this.emptyShow = true
               }
             })
@@ -238,13 +215,6 @@ export default {
     font-weight: 600;
     color: #5269FF;
     line-height: 38px;
-  }
-  .people {
-    span {
-      display: inline-block;
-      margin-right: .5rem;
-      color: #868686;
-    }
   }
 }
 .delete-button {

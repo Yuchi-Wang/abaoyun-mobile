@@ -91,7 +91,9 @@ export default {
           return item.product_Id
         })
         for (let i = 0; i < productidList.length; i++) {
-          this.recommendList[i].productId = productidList[i]
+          if (this.recommendList[i]) {
+            this.recommendList[i].productId = productidList[i]
+          }
         }
       })
     },

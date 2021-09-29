@@ -62,7 +62,7 @@ service.interceptors.response.use(
       } else if (errorResponse.status === 404) {
         Toast('404')
       } else {
-        Toast(errorResponse)
+        Toast(errorResponse.data.data)
       }
     } else {
       Toast('连接超时')

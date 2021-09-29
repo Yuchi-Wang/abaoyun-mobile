@@ -110,7 +110,7 @@ export function cancelAccount(userCode) {
 // 密码登录
 export function passwordLogin(data) {
   return request({
-    url: 'loginType/phoneOrEmailPasswordLogin',
+    url: '/loginType/phoneOrEmailPasswordLogin',
     method: 'post',
     data
   })
@@ -119,7 +119,43 @@ export function passwordLogin(data) {
 // 找回密码
 export function foundPassword(data) {
   return request({
-    url: 'loginType/phoneOrEmailPasswordRetrieve',
+    url: '/loginType/phoneOrEmailPasswordRetrieve',
+    method: 'post',
+    data
+  })
+}
+
+//  查询账户信息
+export function getUserAccount(data) {
+  return request({
+    url: '/paymentManage/getAccountDetail',
+    method: 'post',
+    data
+  })
+}
+
+// 充值接口
+export function createPayAccount(data) {
+  return request({
+    url: '/paymentManage/createPayAccount ',
+    method: 'post',
+    data
+  })
+}
+
+// 获取充值记录
+export function getPayAccountList(data) {
+  return request({
+    url: '/paymentManage/getPayAccountList ',
+    method: 'post',
+    data
+  })
+}
+
+// 删除充值记录
+export function deletePayAccount(data) {
+  return request({
+    url: '/paymentManage/deletePayAccount',
     method: 'post',
     data
   })

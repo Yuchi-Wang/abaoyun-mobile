@@ -26,6 +26,7 @@
       <van-cell title="我的服务" :border="false" is-link @click="handleViewService" />
       <van-cell title="常见问题" :border="false" is-link @click="handleViewQuestion" />
       <van-cell title="关于我们" :border="false" is-link @click="handleViewUs" />
+      <van-cell title="充值" :border="false" is-link @click="handleViewRecharge" />
     </van-cell-group>
     <van-button v-if="userToken" type="warning" @click="logout">退出登录</van-button>
   </div>
@@ -77,6 +78,9 @@ export default {
     },
     handleViewUs() {
       this.$router.push('/about-us')
+    },
+    handleViewRecharge() {
+      this.$router.push('/recharge')
     },
     getPersonal() {
       this.userToken = getToken()

@@ -1,60 +1,98 @@
 <template>
   <div class="doc-main">
     <baseHeader :header-title="headerTitle" />
-    <van-pull-refresh v-if="serviceList.length" v-model="isLoading" @refresh="onRefresh">
+    <van-pull-refresh v-if="serviceList.length" v-model="isRefreshLoading" @refresh="onRefresh">
       <van-list
         v-model="listLoading"
         :finished="listFinished"
         finished-text="没有更多了"
         @load="onLoad"
       >
-        <van-swipe-cell
+        <van-cell
           v-for="(item, index) in serviceList"
           :key="item.id"
           :name="index"
           :before-close="beforeClose"
+          @click="getDetail(item.product_id)"
         >
           <div class="list">
             <van-row>
               <van-col span="18">
-                <h4 class="service-title">{{ item.type }}</h4>
+                <h4 class="service-title">{{ item.name }}</h4>
               </van-col>
               <van-col span="6" style="text-align: right">
-                <van-button type="info" @click="getDetail(item.id)">查看</van-button>
+                <van-button type="info" @click.stop="useService">使用</van-button>
               </van-col>
             </van-row>
           </div>
-          <template #right>
-            <van-button square text="删除" type="danger" class="delete-button" />
-          </template>
-        </van-swipe-cell>
+        </van-cell>
       </van-list>
     </van-pull-refresh>
-    <van-empty v-else description="暂无服务信息" />
+    <van-empty v-if="emptyShow.length" description="暂无服务信息" />
   </div>
 </template>
 
 <script>
 import { Toast, Dialog } from 'vant'
+import { getList } from '@/api/service'
 export default {
   name: 'ServiceList',
   data: () => ({
     headerTitle: '应用服务',
     count: 0,
-    isLoading: false,
+    isReflash: false,
+    isRefreshLoading: false,
     listLoading: false,
     listFinished: false,
-    serviceList: [
-      {
-        id: 1,
-        type: '文字转语音'
-      }
-    ]
-    // serviceList: []
+    pageIndex: 1,
+    pageSize: 8,
+    serviceList: [],
+    hasNextPage: false,
+    emptyShow: false
   }),
+  mounted() {
+    this.getList()
+  },
   methods: {
     onLoad() {
-      this.listFinished = true
+      if (this.isRefreshLoading) {
+        this.serviceList = []
+        this.isRefreshLoading = false
+      } else {
+        if (this.hasNextPage) {
+          setTimeout(() => {
+            this.pageIndex++
+            this.getList()
+          }, 500)
+        } else {
+          this.listLoading = false
+          this.listFinished = true
+        }
+      }
+    },
+    getList() {
+      const params = {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize,
+        user_code: localStorage.getItem('userCode')
+      }
+      getList(params).then(res => {
+        this.isReflash = true
+        this.listLoading = false
+        const responseData = res.data.data
+        if (responseData && responseData.list.length) {
+          for (let i = 0; i < responseData.list.length; i++) {
+            this.serviceList.push(responseData.list[i])
+          }
+          this.hasNextPage = responseData.hasNextPage
+        } else {
+          this.listFinished = true
+        }
+      }).finally(() => {
+        if (!this.serviceList.length) {
+          this.emptyShow = true
+        }
+      })
     },
     getDetail(id) {
       this.$router.push({
@@ -65,14 +103,22 @@ export default {
       })
     },
     onRefresh() {
-      // this.listFinished = false
-      // this.listLoading = true
-      // this.onLoad()
+      this.isReflash = false
       setTimeout(() => {
-        Toast('刷新成功')
-        this.isLoading = false
-        this.count++
+        this.serviceList = []
+        this.pageIndex = 1
+        this.isRefreshLoading = false
+        this.listFinished = false
+        this.getList()
       }, 1000)
+      setTimeout(() => {
+        this.isReflash ? Toast('刷新成功') : Toast('刷新失败')
+      }, 1500)
+    },
+    useService() {
+      this.$router.push({
+        name: 'serviceDemo'
+      })
     },
     beforeClose({ name, position, instance }) {
       switch (position) {
@@ -103,8 +149,10 @@ export default {
   margin-top: .833rem;
   border-radius: .667rem;
 }
-.van-swipe-cell {
+.van-list {
   margin: 0 .8333rem;
+}
+.van-cell {
   background: #fff;
   -webkit-overflow-scrolling: touch;
 }
@@ -113,7 +161,6 @@ export default {
   align-items: center;
 }
 .list {
-  padding: 1.25rem;
   .service-title {
     height: 2rem;
     line-height: 2rem;
@@ -129,9 +176,6 @@ export default {
     border-color: #183FEE;
     border-radius: 1rem;
   }
-}
-.delete-button {
-  height: 100%;
 }
 </style>
 
