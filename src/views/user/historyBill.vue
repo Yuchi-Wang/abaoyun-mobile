@@ -1,7 +1,7 @@
 <template>
   <div class="doc-main">
     <baseHeader :header-title="headerTitle" />
-    <van-pull-refresh v-if="billList.length" v-model="isRefreshLoading" @refresh="onRefresh">
+    <van-pull-refresh v-if="billList.length" v-model="isRefreshLoading" @refresh="onRefresh" style="min-height: 100vh;">
       <van-list
         v-model="listLoading"
         :finished="listFinished"

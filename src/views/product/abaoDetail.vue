@@ -249,14 +249,15 @@ export default {
     },
     purchase() {
       this.totalPrice = Number(this.packgeList[this.activeIndex].money)
-      this.paymentType = this.purchaseList[this.paymentIndex].id
-      this.payName = this.purchaseList[this.paymentIndex].name
       this.submitBarPrice = this.totalPrice * 100
       this.totalTimes = this.packgeList[this.activeIndex].times
       this.useShow = false
       this.purchaseShow = true
     },
     submit() {
+      this.submitShow = true
+      this.paymentType = this.purchaseList[this.paymentIndex].id
+      this.payName = this.purchaseList[this.paymentIndex].name
       const params = {
         phone: '',
         userID: localStorage.getItem('userCode'),
@@ -288,7 +289,11 @@ export default {
                 this.resetPayForm()
                 this.$router.push('/order-list')
               }, 2000)
+            } else {
+              this.submitShow = false
             }
+          }).catch(() => {
+            this.submitShow = false
           })
         }
       })

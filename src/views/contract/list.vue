@@ -11,7 +11,7 @@
       />
     </div>
     <div class="main-list">
-      <van-pull-refresh v-if="contractList.length" v-model="isLoading" @refresh="onRefresh">
+      <van-pull-refresh v-if="contractList.length" v-model="isLoading" @refresh="onRefresh" style="min-height: 100vh;">
         <van-list
           v-model="listLoading"
           :finished="listFinished"

@@ -20,7 +20,7 @@
       <div id="myChart" :style="{width: '100%', height: '250px'}" />
     </div>
     <ul v-if="sdkapiList.length" class="sdk-api">
-      <li v-for="item in sdkapiList" :key="item.id">
+      <li v-for="(item, index) in sdkapiList" :key="item.id">
         <van-row>
           <van-col span="4">
             {{ item.type === '1' ? 'sdk' : 'api' }}
@@ -36,7 +36,7 @@
             复制
           </van-col>
           <van-col span="6" class="doc">
-            <span @click="getSdkDoc">技术文档</span>
+            <span @click="getSdkDoc(index)">技术文档</span>
           </van-col>
         </van-row>
       </li>
@@ -180,11 +180,8 @@ export default {
     onCancel() {
       this.dataShow = false
     },
-    getSdkDoc() {
-      this.$router.push('/abao-doc')
-    },
-    getApiDoc() {
-      this.$router.push('/nlp-doc')
+    getSdkDoc(index) {
+      window.open(this.sdkapiList[index].adress)
     }
   }
 }

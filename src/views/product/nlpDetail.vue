@@ -54,13 +54,12 @@
         <span class="main-title">产品定价</span>
       </h3>
       <van-row>
-        <van-col v-for="item in priceList" :key="item.id" span="8">
-          <div class="price-list-bg" :style="{backgroundImage: 'url('+ item.src +')'}">
-            <span class="price-type">{{ item.type }}</span>
+        <van-col v-for="item in packgeList" :key="item.id" span="8">
+          <div class="price-list-bg">
+            <span class="price-type">{{ item.name }}</span>
             <h4>服务量 </h4>
             <p class="times">{{ item.times }}次</p>
-            <p class="validity">有效期 {{ item.validity }}</p>
-            <p class="cost">{{ item.cost }}</p>
+            <p class="cost">{{ item.money }}</p>
           </div>
         </van-col>
       </van-row>
@@ -80,7 +79,7 @@
     <van-popup v-model="useShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
       <h4>选择套餐</h4>
       <van-row gutter="10">
-        <van-col v-for="(item, index) in mealList" :key="item.id" span="8">
+        <van-col v-for="(item, index) in packgeList" :key="item.id" span="8">
           <span :class="{ active: index === activeIndex }" @click="select(index)">{{ item.name }}</span>
         </van-col>
       </van-row>
@@ -94,7 +93,7 @@
           <span :class="{ active: index === paymentIndex }" @click="selectPayment(index)">{{ item.name }}</span>
         </van-col>
       </van-row>
-      <van-submit-bar :price="totalPrice" :loading="submitShow" button-text="提交" @submit="submit" />
+      <van-submit-bar :price="submitBarPrice" :loading="submitShow" button-text="提交" @submit="submit" />
     </van-popup>
     <!-- 支付结果页 -->
     <van-popup v-model="resultShow" position="bottom" class="pay-result" @click-overlay="resetPayForm">
@@ -103,7 +102,7 @@
       <div class="account-area">
         <p>
           支付金额：
-          <span>￥0</span>
+          <span>￥{{ totalPrice }}</span>
         </p>
         <p>付款方式：{{ payName }}</p>
       </div>
@@ -118,7 +117,7 @@
 </template>
 
 <script>
-import { getDetail } from '@/api/product'
+import { getDetail, getPackagesList } from '@/api/product'
 import { aliPay, weChatPay } from '@/api/payment'
 import { createOrder } from '@/api/order'
 export default {
@@ -156,64 +155,7 @@ export default {
         content: '你可以在聊天室查询股票相关信息'
       }
     ],
-    priceList: [
-      {
-        id: 1,
-        type: '套餐一',
-        times: '5000',
-        validity: '6个月',
-        cost: '免费',
-        src: require('@/assets/img/product/cost-bg.svg')
-      },
-      {
-        id: 2,
-        type: '套餐二',
-        times: '15000',
-        validity: '1年',
-        cost: '免费',
-        src: require('@/assets/img/product/cost-bg.svg')
-      },
-      {
-        id: 3,
-        type: '套餐三',
-        times: '30000',
-        validity: '2年',
-        cost: '免费',
-        src: require('@/assets/img/product/cost-bg.svg')
-      }
-    ],
-    mealList: [
-      {
-        id: 1,
-        name: '免费试用',
-        times: 0
-      },
-      {
-        id: 2,
-        name: '500次',
-        times: 500
-      },
-      {
-        id: 3,
-        name: '5000次',
-        times: 5000
-      },
-      {
-        id: 4,
-        name: '10000次',
-        times: 10000
-      },
-      {
-        id: 5,
-        name: '50000次',
-        times: 50000
-      },
-      {
-        id: 6,
-        name: '150000次',
-        times: 150000
-      }
-    ],
+    packgeList: [],
     purchaseList: [
       {
         id: '1',
@@ -233,14 +175,26 @@ export default {
     totalPrice: 0,
     paymentType: '1',
     totalTimes: 0,
-    payName: ''
+    payName: '',
+    submitBarPrice: 0
   }),
   mounted() {
     this.getProductDetail()
+    this.getPackagesList()
   },
   methods: {
     getNlpDoc() {
       this.$router.push('/nlp-doc')
+    },
+    getPackagesList() {
+      const params = {
+        type: '2',
+        pageIndex: 1,
+        pageSize: 8
+      }
+      getPackagesList(params).then(res => {
+        this.packgeList = res.data.data.list
+      })
     },
     resetPayForm() {
       setTimeout(() => {
@@ -248,7 +202,9 @@ export default {
         this.paymentIndex = 0
         this.paymentType = '1'
         this.totalTimes = 0
-        this.payName = ''
+        this.totalPrice = 0
+        this.payName = '',
+        this.submitBarPrice = 0
       }, 300)
     },
     freeUse() {
@@ -266,16 +222,19 @@ export default {
     },
     selectPayment(index) {
       this.paymentIndex = index
-      this.paymentType = this.purchaseList[index].id
-      this.payName = this.purchaseList[index].name
     },
     purchase() {
-      this.totalTimes = this.mealList[this.activeIndex].times
-      this.totalPrice = this.productDetail.price * this.totalTimes
+      this.totalPrice = Number(this.packgeList[this.activeIndex].money)
+      this.submitBarPrice = this.totalPrice * 100
+      this.totalTimes = this.packgeList[this.activeIndex].times
       this.useShow = false
       this.purchaseShow = true
     },
     submit() {
+      this.submitShow = true
+      this.paymentType = this.purchaseList[this.paymentIndex].id
+      this.payName = this.purchaseList[this.paymentIndex].name
+      console.log(this.purchaseList[this.paymentIndex])
       const params = {
         phone: '',
         userID: localStorage.getItem('userCode'),
@@ -289,9 +248,9 @@ export default {
       methods(params).then(res => {
         if (res.data.code === 200) {
           const orderParams = {
-            product_name: '诚龙阿宝',
+            product_name: '金融NLP',
             price_number: this.productDetail.price,
-            payment_amount: this.totalPrice,
+            payment_amount: this.totalPrice + '',
             payment_type: this.paymentType,
             phone: '',
             user_code: localStorage.getItem('userCode'),
@@ -303,11 +262,14 @@ export default {
             if (res.data.code === 200) {
               this.purchaseShow = false
               this.resultShow = true
-              this.resetPayForm()
               setTimeout(() => {
                 this.$router.push('/order-list')
               }, 2000)
+            } else {
+              this.submitShow = false
             }
+          }).catch(()=> {
+            this.submitShow = false
           })
         }
       })
@@ -551,7 +513,9 @@ export default {
         position: relative;
         width: 100%;
         padding: 2rem 0 0 .5rem;
+        margin-bottom: 1rem;
         height: 10.667rem;
+        background: url('../../assets/img/product/cost-bg.svg');
         background-repeat: no-repeat;
         background-size: cover;
         box-sizing: border-box;

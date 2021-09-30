@@ -65,18 +65,25 @@ export default {
   },
   methods: {
     submit() {
+      this.submitShow = true
       const params = {
         money: this.totalPrice + '',
         type: this.paymentIndex + 1 + '',
         user_code: localStorage.getItem('userCode')
       }
-      if (this.money !== '') {
+      console.log(params)
+      if (params.money !== '') {
         createPayAccount(params).then(res => {
           this.purchaseShow = false
           this.getUserAccount()
           Toast(res.data.msg)
+        }).finally(() => {
+          setTimeout(()=> {
+            this.submitShow = false
+          }, 300)
         })
       } else {
+        this.submitShow = false
         Toast('充值金额不能为空')
       }
     },

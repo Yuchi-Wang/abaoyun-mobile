@@ -3,20 +3,22 @@
   <div>
     <baseHeader :header-title="headerTitle" />
     <div ref="chatContent" class="chat-content">
-      <div>
-        <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
-          <!-- 对方 -->
-          <div v-if="!item.mineMsg" class="word">
-            <img src="../../assets/img/user/my/system_avatar.png">
-            <div class="info-content" v-html="item.contactText" />
-          </div>
-          <!-- 我的 -->
-          <div v-else class="word-my">
-            <div class="info-content">{{ item.contactText }}</div>
-            <img src="../../assets/img/user/my/user.svg">
-          </div>
+      <van-pull-refresh v-model="isLoading" @refresh="onRefresh" style="min-height: 100vh;">
+        <div>
+            <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
+            <!-- 对方 -->
+            <div v-if="!item.mineMsg" class="word">
+                <img src="../../assets/img/user/my/system_avatar.png">
+                <div class="info-content" v-html="item.contactText" />
+            </div>
+            <!-- 我的 -->
+            <div v-else class="word-my">
+                <div class="info-content">{{ item.contactText }}</div>
+                <img src="../../assets/img/user/my/user.svg">
+            </div>
+            </div>
         </div>
-      </div>
+      </van-pull-refresh>    
     </div>
     <footer ref="footer">
       <van-field
@@ -41,19 +43,33 @@ export default {
     headerTitle: '阿宝',
     value: '',
     chatContent: [],
-    equipment: ''
+    equipment: '',
+    pageIndex: 1,
+    pageSize: 8,
+    isLoading: false,
+    hasNextPage: false,
+    firstCome: true
   }),
   mounted() {
     this.getChatList()
-    this.scrollToBottom()
   },
   updated() {
-    this.scrollToBottom()
+    if (this.firstCome) {
+      this.scrollToBottom()
+    }
   },
   methods: {
     inputBlur() {
       if (this.value !== '') {
         this.submit()
+      }
+    },
+    onRefresh() {
+      if (this.hasNextPage) {
+        this.pageIndex ++
+        this.getChatList()
+      } else {
+        this.isLoading = false
       }
     },
     scrollToBottom() {
@@ -63,17 +79,26 @@ export default {
       })
     },
     getChatList() {
-      getChatList({ user_code: localStorage.getItem('userCode') }).then(res => {
+        const params = {
+          pageIndex: this.pageIndex,
+          pageSize: this.pageSize,
+          user_code: localStorage.getItem('userCode')
+        }
+      getChatList(params).then(res => {
+        this.hasNextPage = res.data.data.hasNextPage
         res.data.data.list.map(item => {
-          this.chatContent.push({
-            mineMsg: true,
-            contactText: item.send_content
-          })
-          this.chatContent.push({
+          this.chatContent.unshift({
             mineMsg: false,
             contactText: item.receive_content
           })
+          this.chatContent.unshift({
+            mineMsg: true,
+            contactText: item.send_content
+          })
         })
+      }).finally(() => {
+          this.isLoading = false
+          this.firstCome = false
       })
     },
     submit() {
@@ -82,6 +107,7 @@ export default {
         mineMsg: true,
         contactText: subContent
       })
+      this.scrollToBottom()
       this.value = ''
       const params = {
        fromusername: localStorage.getItem('userCode'),
@@ -94,6 +120,7 @@ export default {
             mineMsg: false,
             contactText: result.content
           })
+          this.scrollToBottom()
         } else {
           Toast(res.data.msg)
         }

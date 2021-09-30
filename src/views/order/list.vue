@@ -4,7 +4,7 @@
       <i class="turn-back-icon" @click="turnBack" />
       <van-field v-model="value" maxlength="25" placeholder="请输入订单号" />
     </div>
-    <van-pull-refresh v-if="orderList.length" v-model="isRefreshLoading" @refresh="onRefresh">
+    <van-pull-refresh v-if="orderList.length" v-model="isRefreshLoading" @refresh="onRefresh" style="min-height: 100vh;">
       <van-list
         v-model="listLoading"
         :finished="listFinished"

@@ -1,9 +1,11 @@
 'use strict'
 const path = require('path')
+const zlib = require("zlib")
 const resolve = dir => path.join(__dirname, dir)
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const CompressionWebpackPlugin = require('compression-webpack-plugin')
 const isProduction = process.env.NODE_ENV === 'production'
+const timeStamp = new Date().getTime()
 
 module.exports = {
   publicPath: '/',
@@ -25,13 +27,10 @@ module.exports = {
   chainWebpack: config => {
     config.resolve.alias
       .set('@', resolve('src'))
-      .set('@assets', resolve('src/assets'))
-      .set('@components', resolve('src/components'))
-    // 拆包
     config.optimization.splitChunks({
       chunks: 'all',
       maxInitialRequests: Infinity,
-      minSize: 300000, // 依赖包超过300000bit将被单独打包
+      minSize: 300000,
       automaticNameDelimiter: '-',
       cacheGroups: {
         vendor: {
@@ -50,9 +49,14 @@ module.exports = {
       const plugins = []
       plugins.push(
         new CompressionWebpackPlugin({
-          filename: '[path].gz[query]',
-          algorithm: 'gzip',
-          test: /\.(js|css|json|txt|html|ico|svg)(\?.*)?$/i,
+          filename: `[path]${timeStamp}.gz[query]`,
+          algorithm: 'brotliCompress',
+          test: /\.(js|css|json)(\?.*)?$/i,
+          compressionOptions: {
+            params: {
+              [zlib.constants.BROTLI_PARAM_QUALITY]: 11  // Brotli打包，优于gip打包算法
+            },
+          },
           threshold: 10240,
           minRatio: 0.8
         }),
