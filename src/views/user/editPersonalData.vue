@@ -10,7 +10,7 @@
 
 <script>
 import { Toast } from 'vant'
-import { editUserInfo } from '@/api/user'
+import { editUserInfo, getUserInfo } from '@/api/user'
 export default {
   name: 'EditPersonalData',
   data: () => ({
@@ -19,26 +19,40 @@ export default {
     value: '',
     label: '',
     email: '',
-    emailTest: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
+    emailTest: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+    userDetail: {}
   }),
   mounted() {
-    this.judgeTitle()
+    this.getPersonal()
   },
   methods: {
+    getPersonal() {
+      const params = {
+        user_code: localStorage.getItem('userCode')
+      }
+      getUserInfo(params).then(response => {
+        this.userDetail = response.data.data
+      }).finally(() => {
+        this.judgeTitle()
+      })
+    },
     judgeTitle() {
       this.routerQueryType = this.$route.query.type
       switch (this.routerQueryType) {
         case 'name':
           this.headerTitle = '修改昵称'
           this.label = '昵称'
+          this.value = this.userDetail.nickname
           break
         case 'email':
           this.headerTitle = '绑定邮箱'
           this.label = '邮箱'
+          this.value = ''
           break
         case 'addr':
           this.headerTitle = '修改地址'
           this.label = '所在地'
+          this.value = this.userDetail.adress
           break
       }
     },

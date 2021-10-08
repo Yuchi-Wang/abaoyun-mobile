@@ -53,7 +53,7 @@
       请阅读并同意 <span>《用户协议》</span>和<span>《隐私政策》</span>
     </van-checkbox> -->
     <van-button v-if="active === 0 || active === 1" round type="info" @click="getVcCode">获取验证码</van-button>
-    <van-button v-if="active === 2" round type="info" @click="login">登录</van-button>
+    <van-button v-if="active === 2" round type="info" @click="login" :loading="loginLoading">登录</van-button>
     <p class="return-home" @click="turnBack">返回首页</p>
   </div>
 </template>
@@ -72,7 +72,8 @@ export default {
     emailTest: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
     redirect: '/',
     account: '',
-    password: ''
+    password: '',
+    loginLoading: false
   }),
   mounted() {
     this.init()
@@ -127,6 +128,7 @@ export default {
       }
     },
     login() {
+      this.loginLoading = true
       const params = {
         phone_email: this.account,
         password: this.password
@@ -136,7 +138,11 @@ export default {
           localStorage.setItem('userCode', res.data.data.user_code)
           setToken(res.data.data.token)
           this.$router.replace(this.redirect)
+        } else {
+          this.loginLoading = false
         }
+      }).finally(() => {
+        this.loginLoading = false
       })
     },
     forgetPassword() {
