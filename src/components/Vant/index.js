@@ -26,7 +26,8 @@ import {
   SubmitBar,
   Empty,
   picker,
-  Badge
+  Badge,
+  DatetimePicker
 } from 'vant'
 
 const CustomVant = {
@@ -59,6 +60,7 @@ const CustomVant = {
       .use(Empty)
       .use(Badge)
       .use(picker)
+      .use(DatetimePicker)
   }
 }
 

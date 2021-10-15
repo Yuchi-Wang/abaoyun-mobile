@@ -41,6 +41,14 @@
         </van-row>
       </li>
     </ul>
+    <div class="download_chat">
+      历史聊天记录下载
+      <van-cell-group>
+        <van-cell title="请选择开始时间" :value="startDate" :border="false" is-link @click="startShow = true" />
+        <van-cell title="请选择结束时间" :value="endDate" :border="false" is-link @click="endShow = true" />
+      </van-cell-group>
+      <van-button class="down-button" @click="downChatList">下载</van-button>
+    </div>
     <van-popup v-model="dataShow" position="bottom">
       <van-picker
         title="选择查看时间范围"
@@ -48,6 +56,32 @@
         :columns="dataList"
         @confirm="onConfirm"
         @cancel="onCancel"
+      />
+    </van-popup>
+    <!-- 开始时间 -->
+    <van-popup v-model="startShow" position="bottom">
+      <van-datetime-picker
+        v-model="currentStartDate"
+        type="datetime"
+        :min-date="minStartDate"
+        :max-date="maxStartDate"
+        title="选择开始时间"
+        show-toolbar
+        @confirm="onStartConfirm"
+        @cancel="onStartCancel"
+      />
+    </van-popup>
+    <!-- 结束时间 -->
+    <van-popup v-model="endShow" position="bottom">
+      <van-datetime-picker
+        v-model="currentEndDate"
+        type="datetime"
+        :min-date="minEndDate"
+        :max-date="maxEndDate"
+        title="选择开始时间"
+        show-toolbar
+        @confirm="onEndConfirm"
+        @cancel="onEndCancel"
       />
     </van-popup>
   </div>
@@ -63,17 +97,17 @@ require('echarts/lib/chart/line')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 require('echarts/lib/component/visualMap')
-import { getChatStatistics, getServiceModeList } from '@/api/service'
+import { getChatStatistics, getServiceModeList, getChatList } from '@/api/service'
 export default {
   name: 'ServiceDetail',
   data: () => ({
     headerTitle: '服务详情',
-    dateText: '日',
+    dateText: '周',
     dateValue: '1',
     dataList: [
       {
         value: '1',
-        text: '日'
+        text: '周'
       },
       {
         value: '2',
@@ -99,7 +133,17 @@ export default {
     ],
     sdkapiList: [],
     dateList: [],
-    countList: []
+    countList: [],
+    startDate: '',
+    endDate: '',
+    minStartDate: new Date(2020, 0, 1),
+    maxStartDate: new Date(),
+    currentStartDate: new Date(),
+    minEndDate: new Date(2020, 0, 1),
+    maxEndDate: new Date(),
+    currentEndDate: new Date(),
+    endShow: false,
+    startShow: false
   }),
   mounted() {
     this.getChatStatistics()
@@ -180,8 +224,78 @@ export default {
     onCancel() {
       this.dataShow = false
     },
+    onStartCancel() {
+      this.startShow = false
+    },
+    onEndCancel() {
+      this.endShow = false
+    },
+    addZero: num => ('00' + num).substr(('00' + num).length - 2, 2),
+    dateFormat(date) {
+      const year = date.getFullYear()
+      const mouth = date.getMonth() + 1
+      const dates = date.getDate()
+      const hours = date.getHours()
+      const minutes = date.getMinutes()
+      const seconds = date.getSeconds()
+      return year + '-' + this.addZero(mouth) + '-' + this.addZero(dates) + ' ' + this.addZero(hours) + ':' + this.addZero(minutes) + ':' + this.addZero(seconds)
+    },
+    onStartConfirm() {
+      this.startDate = this.dateFormat(this.currentStartDate)
+      this.startShow = false
+    },
+    onEndConfirm() {
+      this.endDate = this.dateFormat(this.currentEndDate)
+      this.endShow = false
+    },
     getSdkDoc(index) {
       window.open(this.sdkapiList[index].adress)
+    },
+    downChatList() {
+      const startTimeStr = this.currentStartDate.getTime()
+      const endTimeStr = this.currentEndDate.getTime()
+      if (startTimeStr > endTimeStr) {
+        Toast('开始时间不能大于结束时间')
+      } else {
+        const parmas = {
+          user_code: localStorage.getItem('userCode'),
+          start_time: this.startDate,
+          end_time: this.endDate
+        }
+        getChatList(parmas).then(res => {
+          const responseData = res.data.data
+          if (responseData && responseData.list.length) {
+            this.handleDownload(res.data.data.list)
+          } else {
+            Toast('暂无查询记录')
+          }
+        })
+      }
+    },
+    handleDownload(list) {
+      this.downloadLoading = true
+      import('@/utils/exportExcel').then(excel => {
+        const tHeader = ['时间','发送内容', '回复方', '回复内容']
+        const filterVal = ['createtime', 'send_content', 'name', 'receive_content']
+        const data = this.formatJson(filterVal, list)
+        excel.export_json_to_excel({
+          header: tHeader,
+          data,
+          filename: `聊天记录`,
+          autoWidth: true,
+          bookType: 'xlsx'
+        })
+        this.downloadLoading = false
+      })
+    },
+    formatJson(filterVal, jsonData) {
+      return jsonData.map(v => filterVal.map(j => {
+        if (j === 'createtime') {
+          return v[j].slice(0, v[j].length - 2)
+        } else {
+          return v[j]
+        }
+      }))
     }
   }
 }
@@ -245,7 +359,7 @@ export default {
   padding: 0 1rem;
   font-size: 1.167rem;
 }
-.sdk-api {
+.sdk-api,.download_chat {
   margin: .833rem;
   background: #fff;
   border-radius: .333rem;
@@ -271,5 +385,26 @@ export default {
       color: #505050;
     }
   }
+}
+.download_chat {
+  padding: 1rem;
+  .van-cell {
+    padding: .5rem 0;
+  }
+  .van-cell__title {
+    font-size: 1.1rem;
+  }
+}
+.down-button {
+  display: block;
+  margin: 3rem auto 0;
+  width: 8.333rem;
+  height: 2.8rem;
+  line-height: 2.8rem;
+  background: #324BE3;
+  border-color: #324BE3;
+  border-radius: 2rem;
+  font-size: 1.083rem;
+  color: #fff;
 }
 </style>

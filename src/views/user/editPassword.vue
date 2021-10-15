@@ -55,7 +55,7 @@ export default {
       if (this.newPassword === '') {
         Toast('密码不能为空')
       } else if (!this.passwordTest.test(this.newPassword)) {
-        Toast('密码长度应在6到16为之间且至少包含一个大写字母')
+        Toast('至少包含6位字符、字母数字组合、1位大写字母')
       } else {
         if (this.isSetPassword) {
           this.editPassword()

@@ -3,7 +3,7 @@
     <baseHeader :header-title="headerTitle" />
     <div class="main">
       <p>
-        <van-icon name="pending-payment"  size="1.5rem" />
+        <van-icon name="pending-payment" size="1.5rem" />
         我的账户余额
       </p>
       <h4>{{ surplusMoney }}元</h4>
@@ -25,7 +25,7 @@
         </van-col>
       </van-row>
       <van-field v-model="totalPrice" type="digit" label="充值金额" />
-      <van-submit-bar :price="submitPrice"  :loading="submitShow" button-text="提交" @submit="submit" />
+      <van-submit-bar :price="submitPrice" :loading="submitShow" button-text="提交" @submit="submit" />
     </van-popup>
   </div>
 </template>
@@ -71,14 +71,13 @@ export default {
         type: this.paymentIndex + 1 + '',
         user_code: localStorage.getItem('userCode')
       }
-      console.log(params)
-      if (params.money !== '') {
+      if (params.money !== '' && params.money !== '0') {
         createPayAccount(params).then(res => {
           this.purchaseShow = false
           this.getUserAccount()
           Toast(res.data.msg)
         }).finally(() => {
-          setTimeout(()=> {
+          setTimeout(() => {
             this.submitShow = false
           }, 300)
         })

@@ -9,8 +9,9 @@
       <van-cell title="创建时间" :border="false" :value="orderDetail.createtime" />
       <van-cell title="付款时间" :border="false" :value="orderDetail.payment_time" />
       <van-cell title="付款人" :border="false" :value="orderDetail.payPeople" />
+      <van-cell title="jar包下载" :border="false" is-link @click="jarPopup = true" />
     </van-cell-group>
-    <van-button type="primary" class="download-jar" @click="jarPopup = true">jar包下载</van-button>
+    <van-button type="primary" class="download-jar" @click="handleContract">申请合同</van-button>
     <van-button v-if="orderDetail.payment_amount" type="info" @click="applyInvoice">申请开票</van-button>
     <van-popup v-model="jarPopup" class="jar-popup">
       <h3>jar包地址</h3>
@@ -40,6 +41,14 @@ export default {
         query: {
           id: this.detailId,
           type: 'apply'
+        }
+      })
+    },
+    handleContract() {
+      this.$router.push({
+        name: 'applyContract',
+        query: {
+          id: this.orderDetail.product_id
         }
       })
     },

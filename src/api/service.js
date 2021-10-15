@@ -36,7 +36,7 @@ export function getServiceModeList(data) {
   })
 }
 
-// 获取sdk api列表
+// 阿宝聊天对话接口
 export function getChatDialogue(data) {
   return request({
     url: '/chatManager/getChatDialogue',
