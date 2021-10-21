@@ -223,4 +223,3 @@ export default {
   border-bottom-right-radius: .667rem;
 }
 </style>
-

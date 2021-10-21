@@ -2,59 +2,66 @@
   <div>
     <baseHeader :header-title="headerTitle" />
     <van-cell-group>
-      <van-cell title="发票类型" :border="false" :value="invoiceDetail.type === '1'? '个人': '企业'" />
-      <van-cell title="发票抬头" :border="false" :value="invoiceDetail.name" />
-      <van-cell title="邮寄地址" :border="false" :value="invoiceDetail.address" />
-      <van-cell v-if="invoiceDetail.type === '2'" title="税务登记号" :border="false" :value="invoiceDetail.identification" />
-      <van-cell v-if="invoiceDetail.type === '2' && invoiceDetail.bank" title="开户银行" :border="false" :value="invoiceDetail.bank" />
-      <van-cell v-if="invoiceDetail.type === '2' && invoiceDetail.bankNum" title="银行账号" :border="false" :value="invoiceDetail.bankNum" />
-      <van-cell v-if="invoiceDetail.type === '2' && invoiceDetail.companyAddress" title="企业地址" :border="false" :value="invoiceDetail.companyAddress" />
-      <van-cell v-if="invoiceDetail.type === '2' && invoiceDetail.companyPhone" title="企业电话" :border="false" :value="invoiceDetail.companyPhone" />
-      <van-cell title="开票金额">
+      <van-cell title="发票状态" :border="false" :value="invoiceStatus" />
+      <van-cell title="发票类型" :border="false" :value="invoiceDetail.invoice_type ? '企业' : '个人'" />
+      <van-cell title="发票抬头" :border="false" :value="invoiceDetail.invoice_title" />
+      <van-cell title="邮寄地址" :border="false" :value="invoiceDetail.mailing_address" />
+      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.duty_paragraph" title="税务登记号" :border="false" :value="invoiceDetail.duty_paragraph" />
+      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.deposit_bank" title="开户银行" :border="false" :value="invoiceDetail.deposit_bank" />
+      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.bank_account" title="银行账号" :border="false" :value="invoiceDetail.bank_account" />
+      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.company_adress" title="企业地址" :border="false" :value="invoiceDetail.company_adress" />
+      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.company_phone" title="企业电话" :border="false" :value="invoiceDetail.company_phone" />
+      <van-cell v-if="invoiceDetail.invoice_amount" title="开票金额">
         <template #right-icon>
           <span class="invoice-price">
-            ￥5000.00
+            {{ invoiceDetail.invoice_amount.toFixed(2) }}
           </span>
         </template>
       </van-cell>
     </van-cell-group>
     <van-button v-if="invoiceDetail.status === '1'" class="cancle-apply" @click="cancleInvoice">撤销申请</van-button>
-    <van-button v-if="invoiceDetail.status === '1'" class="edit-detail" type="info" @click="editInvoice">修改申请</van-button>
+    <van-button v-if="invoiceDetail.status === '1' || invoiceDetail.status === '4'" class="edit-detail" type="info" @click="editInvoice">修改申请</van-button>
   </div>
 </template>
 
 <script>
 import { Dialog, Toast } from 'vant'
+import { getDetail, updateInvoice } from '@/api/invoice'
+const invoiceStatusMap = {
+  '1': '已申请',
+  '2': '申请成功',
+  '3': '已撤销',
+  '4': '申请失败'
+}
 export default {
   name: 'InvoiceDetail',
   data: () => ({
     detailId: -1,
     headerTitle: '发票详情',
-    invoiceDetail: {
-      id: '1',
-      orderId: '2',
-      status: '1',
-      type: '2',
-      num: '111',
-      name: 'xxxx',
-      address: '上海市宜山路810号',
-      cost: '5000',
-      identification: '22222',
-      bank: '',
-      bankNum: '111',
-      companyAddress: '',
-      companyPhone: ''
-    }
+    invoiceDetail: {},
+    invoiceStatusMap
   }),
+  computed: {
+    invoiceStatus() {
+      return this.invoiceStatusMap[this.invoiceDetail.status]
+    }
+  },
   mounted() {
     this.detailId = this.$route.query.id
+    this.getDetail()
   },
   methods: {
+    getDetail() {
+      getDetail({ id: this.detailId }).then(res => {
+        this.invoiceDetail = res.data.data
+      })
+    },
     editInvoice() {
       this.$router.replace({
         name: 'applyInvoice',
         query: {
-          id: this.invoiceDetail.orderId,
+          orderId: this.invoiceDetail.order_number,
+          invoiceId: this.invoiceDetail.id,
           type: 'edit'
         }
       })
@@ -63,8 +70,11 @@ export default {
       Dialog.confirm({
         message: '确认取消申请该该发票吗'
       }).then(() => {
-        Toast('取消成功')
-        this.$router.push('/invoice-list')
+        this.invoiceDetail.status = '3'
+        updateInvoice(this.invoiceDetail).then(res => {
+          Toast(res.data.msg)
+          this.$router.replace('/invoice-list')
+        })
       }).catch(() => {
         // on cancel
       })

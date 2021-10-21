@@ -62,6 +62,7 @@ export default {
   }),
   watch: {
     value() {
+      this.pageIndex = 1
       this.orderList = []
       this.getOrderList()
     }
@@ -89,8 +90,11 @@ export default {
         this.listLoading = false
         const responseData = res.data.data
         if (responseData && responseData.list.length) {
-          for (let i = 0; i < responseData.list.length; i++) {
-            this.orderList.push(responseData.list[i])
+          this.emptyShow = false
+          if (this.pageIndex !== 1) {
+            this.orderList = this.orderList.concat(responseData.list)
+          } else {
+            this.orderList = responseData.list
           }
           this.hasNextPage = responseData.hasNextPage
         } else {

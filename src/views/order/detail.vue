@@ -11,8 +11,17 @@
       <van-cell title="付款人" :border="false" :value="orderDetail.payPeople" />
       <van-cell title="jar包下载" :border="false" is-link @click="jarPopup = true" />
     </van-cell-group>
-    <van-button type="primary" class="download-jar" @click="handleContract">申请合同</van-button>
-    <van-button v-if="orderDetail.payment_amount" type="info" @click="applyInvoice">申请开票</van-button>
+    <!-- <van-button type="primary" class="download-jar" @click="handleContract">申请合同</van-button> -->
+    <van-button
+      v-if="orderDetail.payment_amount &&
+        orderDetail.invoice_status !== '1' &&
+        orderDetail.invoice_status !== '2' &&
+        orderDetail.invoice_status !== '4'"
+      type="info"
+      @click="applyInvoice"
+    >
+      申请开票
+    </van-button>
     <van-popup v-model="jarPopup" class="jar-popup">
       <h3>jar包地址</h3>
       <p>http://www.baidu.com</p>
@@ -39,7 +48,7 @@ export default {
       this.$router.push({
         name: 'applyInvoice',
         query: {
-          id: this.detailId,
+          orderId: this.detailId,
           type: 'apply'
         }
       })
@@ -111,3 +120,4 @@ export default {
   }
 }
 </style>
+

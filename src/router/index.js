@@ -191,13 +191,33 @@ const constantRoutes = [
   },
   {
     path: '/recharge',
-    component: _resolve('user/recharge'),
+    component: _resolve('recharge/index'),
     name: 'recharge'
   },
   {
     path: '/history-bill',
-    component: _resolve('user/historyBill'),
+    component: _resolve('recharge/historyBill'),
     name: 'historyBill'
+  },
+  {
+    path: '/recharge-explain',
+    component: _resolve('recharge/explain'),
+    name: 'rechargeExplain'
+  },
+  {
+    path: '/recharge-uploader',
+    component: _resolve('recharge/uploader'),
+    name: 'rechargeUploader'
+  },
+  {
+    path: '/recharge-withdrawal',
+    component: _resolve('recharge/withdrawal'),
+    name: 'rechargeWithdrawal'
+  },
+  {
+    path: '/recharge-result',
+    component: _resolve('recharge/result'),
+    name: 'rechargeResult'
   },
   {
     path: '/abao-serve',

@@ -42,8 +42,8 @@
       </li>
     </ul>
     <div class="download_chat">
-      历史聊天记录下载
-      <van-cell-group>
+      <h4>历史聊天记录下载</h4>
+      <van-cell-group :border="false">
         <van-cell title="请选择开始时间" :value="startDate" :border="false" is-link @click="startShow = true" />
         <van-cell title="请选择结束时间" :value="endDate" :border="false" is-link @click="endShow = true" />
       </van-cell-group>
@@ -204,7 +204,7 @@ export default {
       getChatStatistics(params).then(res => {
         this.serviceList[0].times = res.data.data.todayTime
         this.serviceList[1].times = res.data.data.surplusTime
-        this.dateList = res.data.data.aBaoService.map(item => item.date.replace(/\b(0+)/gi,""))
+        this.dateList = res.data.data.aBaoService.map(item => item.date.replace(/\b(0+)/gi, ''))
         this.countList = res.data.data.aBaoService.map(item => item.count)
         this.drawLine()
       })
@@ -275,7 +275,7 @@ export default {
     handleDownload(list) {
       this.downloadLoading = true
       import('@/utils/exportExcel').then(excel => {
-        const tHeader = ['时间','发送内容', '回复方', '回复内容']
+        const tHeader = ['时间', '发送内容', '回复方', '回复内容']
         const filterVal = ['createtime', 'send_content', 'name', 'receive_content']
         const data = this.formatJson(filterVal, list)
         excel.export_json_to_excel({
@@ -364,7 +364,10 @@ export default {
   background: #fff;
   border-radius: .333rem;
   padding: 0 1rem;
-  font-size: 1.167rem;
+  h4 {
+    font-size: 1.167rem;
+    margin-bottom: .4rem;
+  }
   li {
     height: 3.667rem;
     line-height: 3.667rem;
@@ -389,7 +392,7 @@ export default {
 .download_chat {
   padding: 1rem;
   .van-cell {
-    padding: .5rem 0;
+    padding: .1rem 0;
   }
   .van-cell__title {
     font-size: 1.1rem;
@@ -397,7 +400,7 @@ export default {
 }
 .down-button {
   display: block;
-  margin: 3rem auto 0;
+  margin: 2rem auto 1rem;
   width: 8.333rem;
   height: 2.8rem;
   line-height: 2.8rem;
