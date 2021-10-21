@@ -3,6 +3,7 @@
     <baseHeader :header-title="headerTitle" />
     <van-cell-group>
       <van-cell title="发票状态" :border="false" :value="invoiceStatus" />
+      <van-cell v-if="invoiceDetail.status === '4'" title="拒绝理由" :border="false" :value="invoiceDetail.reason" />
       <van-cell title="发票类型" :border="false" :value="invoiceDetail.invoice_type ? '企业' : '个人'" />
       <van-cell title="发票抬头" :border="false" :value="invoiceDetail.invoice_title" />
       <van-cell title="邮寄地址" :border="false" :value="invoiceDetail.mailing_address" />

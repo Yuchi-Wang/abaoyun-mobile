@@ -103,6 +103,7 @@ export default {
     },
     applyInvoice() {
       this.invoiceDetail.invoice_type = this.active
+      this.invoiceDetail.status = '1'
       if (!this.invoiceDetail.invoice_title.length) {
         Toast('发票抬头不能为空')
       } else if (!this.invoiceDetail.mailing_address.length) {
@@ -116,7 +117,7 @@ export default {
             if (this.$route.query.invoiceId) {
               this.createOrUpdateInvoice(updateInvoice, '修改成功')
             } else {
-              this.createOrUpdateInvoice(createInvoice, '申请成功')
+              this.createOrUpdateInvoice(createInvoice, '已发起申请')
             }
           }
         } else {
@@ -124,7 +125,7 @@ export default {
           if (this.$route.query.invoiceId) {
             this.createOrUpdateInvoice(updateInvoice, '修改成功')
           } else {
-            this.createOrUpdateInvoice(createInvoice, '申请成功')
+            this.createOrUpdateInvoice(createInvoice, '已发起申请')
           }
         }
       }
