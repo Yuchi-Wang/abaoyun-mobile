@@ -18,15 +18,15 @@
             <van-row gutter="10">
               <van-col span="16">
                 <p class="order-no">账单号：{{ item.check_id }}</p>
-                <h4 class="name">银行转账</h4>
+                <h4 class="name">申请提现</h4>
                 <p class="people">
                   <span>申请时间</span>
                   {{ item.createtime.substring(0, item.createtime.length - 2) }}
                 </p>
               </van-col>
               <van-col span="8">
-                <p class="bill-status">申请状态:{{ item.check_status | statusFilter }}</p>
-                <p class="order-price">充值金额（元）</p>
+                <p class="bill-status">资金状态:{{ item.check_status | statusFilter }}</p>
+                <p class="order-price">提现金额（元）</p>
                 <h4 class="price">{{ item.money }}</h4>
               </van-col>
             </van-row>
@@ -37,7 +37,7 @@
         </van-swipe-cell>
       </van-list>
     </van-pull-refresh>
-    <van-empty v-if="emptyShow" description="暂无相关账单信息" />
+    <van-empty v-if="emptyShow" description="暂无相关提现记录" />
   </div>
 </template>
 
@@ -55,7 +55,7 @@ export default {
     statusFilter: status => statusMap[status]
   },
   data: () => ({
-    headerTitle: '历史账单',
+    headerTitle: '提现记录',
     isRefreshLoading: false,
     listLoading: false,
     listFinished: false,
@@ -82,7 +82,7 @@ export default {
         pageIndex: this.pageIndex,
         user_code: localStorage.getItem('userCode'),
         pageSize: this.pageSize,
-        type: '1'
+        type: '2'
       }
       getList(params).then(res => {
         this.isReflash = true

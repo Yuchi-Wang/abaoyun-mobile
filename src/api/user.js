@@ -134,15 +134,6 @@ export function getUserAccount(data) {
   })
 }
 
-// 充值接口
-export function createPayAccount(data) {
-  return request({
-    url: '/paymentManage/createPayAccount ',
-    method: 'post',
-    data
-  })
-}
-
 // 获取充值记录
 export function getPayAccountList(data) {
   return request({

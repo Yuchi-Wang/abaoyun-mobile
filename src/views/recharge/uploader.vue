@@ -3,6 +3,8 @@
     <baseHeader :header-title="headerTitle" />
     <div class="main">
       <h3>上传交易凭据</h3>
+      <van-field v-model="bankCardNum" type="digit" label="银行卡号：" placeholder="请输入银行卡号" maxlength="20" />
+      <van-field v-model="money" type="digit" label="充值金额：" placeholder="请输入充值金额" maxlength="10" />
       <van-uploader
         v-model="fileList"
         multiple
@@ -25,6 +27,7 @@
 import Vue from 'vue'
 import { Toast } from 'vant'
 import { post } from '@/utils/request'
+import { createCheck } from '@/api/check'
 Vue.prototype.$post = post
 export default {
   name: 'RechargeUploader',
@@ -34,7 +37,9 @@ export default {
     surplusMoney: '0.00',
     fileList: [],
     filePath: '',
-    isUploadFile: false
+    isUploadFile: false,
+    bankCardNum: '',
+    money: ''
   }),
   methods: {
     getHistoryBill() {
@@ -74,7 +79,30 @@ export default {
       } else if (!this.filePath.length && this.isUploadFile) {
         Toast('图片正在上传中，请耐心等待')
       } else if (this.filePath.length && !this.isUploadFile) {
-        Toast('传吧')
+        if (!this.bankCardNum.length) {
+          Toast('银行卡号不能为空')
+        } else if (!this.money.length) {
+          Toast('充值金额不能为空')
+        } else if (this.money === '0') {
+          Toast('充值金额不能为0')
+        } else {
+          const params = {
+            credit_card: this.bankCardNum,
+            screenshot_url: this.filePath,
+            user_code: localStorage.getItem('userCode'),
+            money: this.money,
+            type: '1'
+          }
+          createCheck(params).then(res => {
+            Toast('提交成功')
+            this.$router.replace({
+              name: 'rechargeResult',
+              query: {
+                type: 'recharge'
+              }
+            })
+          })
+        }
       }
     }
   }

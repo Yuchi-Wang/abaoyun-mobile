@@ -10,12 +10,13 @@
       <van-row>
         <van-col span="12">
           <button class="recharge-button" @click="handleRecharge">充值</button>
+          <button class="recharge-button recharge-button1" @click="handWithdrawal">提现</button>
         </van-col>
         <van-col span="12">
           <h5>
             <span @click="getHistoryBill">查看历史账单</span>
             <span> / </span>
-            <span @click="handWithdrawal">提现</span>
+            <span @click="handWithdrawalList">提现记录</span>
           </h5>
         </van-col>
       </van-row>
@@ -48,8 +49,11 @@ export default {
     getHistoryBill() {
       this.$router.push('/history-bill')
     },
+    handWithdrawalList() {
+      this.$router.push('/recharge-withdrawalList')
+    },
     handWithdrawal() {
-       this.$router.push('/recharge-withdrawal')    
+      this.$router.push('/recharge-withdrawal')
     }
   }
 }
@@ -86,9 +90,9 @@ export default {
     height: 2.5rem;
     line-height: 2.5rem;
     background: #5269FF;
+    border: 1px solid #5269ff;
     border-radius: 1.25rem;
     outline: none;
-    border: none;
     color: #fff;
     font-size: 1.167rem;
     font-weight: 600;
@@ -99,6 +103,12 @@ export default {
     line-height: 2.5rem;
     font-weight: 600;
     color: #5269FF;
+  }
+  .recharge-button1 {
+    background: #fff;
+    border: 1px solid #5269ff;
+    color: #5269ff;
+    margin-left: 5px;
   }
 }
 </style>

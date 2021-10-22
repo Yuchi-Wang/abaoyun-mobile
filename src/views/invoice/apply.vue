@@ -98,11 +98,11 @@ export default {
     getDetail() {
       getDetail({ id: this.$route.query.invoiceId }).then(res => {
         this.invoiceDetail = res.data.data
-        this.active = this.invoiceDetail.invoice_type
+        this.active = this.invoiceDetail.invoice_type - 1
       })
     },
     applyInvoice() {
-      this.invoiceDetail.invoice_type = this.active
+      this.invoiceDetail.invoice_type = this.active + 1
       this.invoiceDetail.status = '1'
       if (!this.invoiceDetail.invoice_title.length) {
         Toast('发票抬头不能为空')
@@ -136,12 +136,6 @@ export default {
         this.$router.replace('/invoice-list')
       })
     }
-    // createInvoice() {
-    //   createInvoice(this.invoiceDetail).then(res => {
-    //     Toast('申请成功')
-    //     this.$router.replace('/invoice-list')
-    //   })
-    // }
   }
 }
 </script>

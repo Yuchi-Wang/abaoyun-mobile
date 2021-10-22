@@ -220,6 +220,16 @@ const constantRoutes = [
     name: 'rechargeResult'
   },
   {
+    path: '/recharge-withdrawalList',
+    component: _resolve('recharge/withdrawalList'),
+    name: 'rechargeWithdrawalList'
+  },
+  {
+    path: '/recharge-billDetail',
+    component: _resolve('recharge/billDetail'),
+    name: 'rechargeBillDetail'
+  },
+  {
     path: '/abao-serve',
     component: _resolve('service/demo'),
     name: 'serviceDemo'

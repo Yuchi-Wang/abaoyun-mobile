@@ -4,14 +4,14 @@
     <van-cell-group>
       <van-cell title="发票状态" :border="false" :value="invoiceStatus" />
       <van-cell v-if="invoiceDetail.status === '4'" title="拒绝理由" :border="false" :value="invoiceDetail.reason" />
-      <van-cell title="发票类型" :border="false" :value="invoiceDetail.invoice_type ? '企业' : '个人'" />
+      <van-cell title="发票类型" :border="false" :value="invoiceDetail.invoice_type === 1 ? '个人' : '企业'" />
       <van-cell title="发票抬头" :border="false" :value="invoiceDetail.invoice_title" />
       <van-cell title="邮寄地址" :border="false" :value="invoiceDetail.mailing_address" />
-      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.duty_paragraph" title="税务登记号" :border="false" :value="invoiceDetail.duty_paragraph" />
-      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.deposit_bank" title="开户银行" :border="false" :value="invoiceDetail.deposit_bank" />
-      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.bank_account" title="银行账号" :border="false" :value="invoiceDetail.bank_account" />
-      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.company_adress" title="企业地址" :border="false" :value="invoiceDetail.company_adress" />
-      <van-cell v-if="invoiceDetail.invoice_type && invoiceDetail.company_phone" title="企业电话" :border="false" :value="invoiceDetail.company_phone" />
+      <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.duty_paragraph" title="税务登记号" :border="false" :value="invoiceDetail.duty_paragraph" />
+      <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.deposit_bank" title="开户银行" :border="false" :value="invoiceDetail.deposit_bank" />
+      <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.bank_account" title="银行账号" :border="false" :value="invoiceDetail.bank_account" />
+      <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.company_adress" title="企业地址" :border="false" :value="invoiceDetail.company_adress" />
+      <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.company_phone" title="企业电话" :border="false" :value="invoiceDetail.company_phone" />
       <van-cell v-if="invoiceDetail.invoice_amount" title="开票金额">
         <template #right-icon>
           <span class="invoice-price">

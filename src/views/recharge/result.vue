@@ -5,7 +5,7 @@
       <h4>交易结果</h4>
       <img src="../../assets/img/user/my/recharge-success.svg">
       <h4>提交成功</h4>
-      <p></p>
+      <p>{{ content }}</p>
     </div>
   </div>
 </template>
@@ -14,16 +14,23 @@
 export default {
   name: 'RechargeWithdrawal',
   data: () => ({
-    headerTitle: '提现',
-    cardNumber: '',
-    name: '',
-    tel: ''
+    headerTitle: '',
+    content: ''
   }),
   mounted() {
     this.init()
   },
   methods: {
-    init() {}
+    init() {
+      const type = this.$route.query.type
+      if (type === 'withdrawal') {
+        this.headerTitle = '提现'
+        this.content = '您的收款信息已经提交成功，我们会进行核实，核实时间为一般为1到2个工作日，处理完后会告知您，请及时查看到账情况'
+      } else {
+        this.headerTitle = '充值'
+        this.content = '您的交易凭据已经上传成功，我们会进行核实，核实时间为一般为1到2个工作日，处理完后会告知您，请及时查看到账情况'
+      }
+    }
   }
 }
 </script>
@@ -48,25 +55,11 @@ export default {
     margin: 1.167rem auto;
   }
   p {
-    font-size: 1.167rem;
+    margin-top: 2.08rem;
+    font-size: 1.17rem;
     font-weight: 400;
-    color: #000000;
-    line-height: 1.667rem;
-  }
-  .van-cell {
-    /deep/ .van-field__label {
-      text-align: right;
-    }
-  }
-  .van-button {
-    display: block;
-    margin:2.5rem auto;
-    width: 20.8333rem;
-    height: 3.333rem;
-    line-height: 3.333rem;
-    background: #3C51FF;
-    border-color: #3C51FF;
-    border-radius: 1.6667rem;
+    color: #555555;
+    line-height: 1.67rem;
   }
 }
 </style>

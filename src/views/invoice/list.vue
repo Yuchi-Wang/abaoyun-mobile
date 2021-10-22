@@ -20,7 +20,7 @@
           <div class="list" @click="getDetail(item.id)">
             <van-row>
               <van-col span="16">
-                <p class="invoice-no">发票类型:{{ item.invoice_type ? '企业' : '个人' }}</p>
+                <p class="invoice-no">发票类型:{{ item.invoice_type === 1 ? '个人' : '企业' }}</p>
                 <h4 class="name">{{ item.invoice_name }}</h4>
                 <p class="people">
                   <span>申请时间</span>

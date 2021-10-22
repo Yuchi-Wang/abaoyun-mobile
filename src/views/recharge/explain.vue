@@ -31,7 +31,7 @@
         <van-col span="6" class="t-a-l">联系电话：</van-col>
         <van-col span="16">&nbsp;021-61266911</van-col>
       </van-row>
-      <van-button type="primary" @click="handleUploader">上传交易凭据</van-button>
+      <van-button type="primary" @click="handleUploader">下一步</van-button>
     </div>
   </div>
 </template>
@@ -44,7 +44,7 @@ export default {
   }),
   methods: {
     handleUploader() {
-      this.$router.push('/recharge-uploader')
+      this.$router.replace('/recharge-uploader')
     }
   }
 }
