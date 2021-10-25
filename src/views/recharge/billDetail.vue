@@ -7,6 +7,7 @@
       <van-cell v-if="billDetail.check_status === '2'" title="拒绝理由" :border="false" :value="billDetail.reason" />
       <van-cell :title="billStausTitle + '银行卡号'" :border="false" :value="billDetail.credit_card" />
       <van-cell :title="billStausTitle + '金额'" :border="false" :value="'￥' + billDetail.money" />
+      <van-cell v-if="billDetail.name" title="申请人" :border="false" :value="billDetail.name" />
       <van-cell title="申请时间" v-if="billDetail.createtime" :border="false" :value="billDetail.createtime.substring(0, billDetail.createtime.length - 2)" />
     </van-cell-group>
   </div>

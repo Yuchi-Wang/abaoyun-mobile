@@ -5,6 +5,7 @@
       <h3>上传交易凭据</h3>
       <van-field v-model="bankCardNum" type="digit" label="银行卡号：" placeholder="请输入银行卡号" maxlength="20" />
       <van-field v-model="money" type="digit" label="充值金额：" placeholder="请输入充值金额" maxlength="10" />
+      <van-field v-model="name" label="姓名" placeholder="请输入该卡号绑定的姓名" :border="false" maxlength="10" />
       <van-uploader
         v-model="fileList"
         multiple
@@ -39,7 +40,8 @@ export default {
     filePath: '',
     isUploadFile: false,
     bankCardNum: '',
-    money: ''
+    money: '',
+    name: ''
   }),
   methods: {
     getHistoryBill() {
@@ -85,12 +87,15 @@ export default {
           Toast('充值金额不能为空')
         } else if (this.money === '0') {
           Toast('充值金额不能为0')
+        } else if (!this.name.length) {
+          Toast('姓名不能为空')
         } else {
           const params = {
             credit_card: this.bankCardNum,
             screenshot_url: this.filePath,
             user_code: localStorage.getItem('userCode'),
             money: this.money,
+            name: this.name,
             type: '1'
           }
           createCheck(params).then(res => {

@@ -11,7 +11,7 @@
       <van-cell title="付款人" :border="false" :value="orderDetail.payPeople" />
       <van-cell title="jar包下载" :border="false" is-link @click="jarPopup = true" />
     </van-cell-group>
-    <!-- <van-button type="primary" class="download-jar" @click="handleContract">申请合同</van-button> -->
+    <van-button type="primary" class="download-jar" @click="handleContract">申请合同</van-button>
     <van-button
       v-if="orderDetail.payment_amount &&
         orderDetail.invoice_status !== '1' &&

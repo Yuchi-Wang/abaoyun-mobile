@@ -43,7 +43,9 @@ export default {
     getUserAccount() {
       const userCode = localStorage.getItem('userCode')
       getUserAccount({ user_code: userCode }).then(res => {
-        this.surplusMoney = res.data.data.surplus_money
+        if (res.data.data) {
+          this.surplusMoney = res.data.data.surplus_money
+        }
       })
     },
     getHistoryBill() {

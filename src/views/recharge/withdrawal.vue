@@ -14,7 +14,6 @@
         <van-field v-model="cardNumber" type="digit" label="收款银行卡号" :border="false" placeholder="请输入收款银行卡号" maxlength="20" />
         <van-field v-model="money" type="digit" label="提现金额" :border="false" placeholder="请输入提现金额" maxlength="20" />
         <van-field v-model="name" label="姓名" placeholder="请输入该卡号绑定的姓名" :border="false" maxlength="10" />
-        <van-field v-model="tel" label="联系方式" type="tel" :border="false" placeholder="请输入联系手机号" maxlength="11" />
       </van-cell-group>
       <van-button type="primary" @click="submit">提现</van-button>
     </div>
@@ -30,7 +29,6 @@ export default {
     headerTitle: '提现',
     cardNumber: '',
     name: '',
-    tel: '',
     money: ''
   }),
   methods: {
@@ -39,8 +37,6 @@ export default {
         Toast('请输入收款银行卡号')
       } else if (!this.name.length) {
         Toast('请输入姓名')
-      } else if (!this.tel.length && this.tel.length !== 11) {
-        Toast('请输入正确的联系手机号')
       } else if (!this.money.length || this.money === '0') {
         Toast('请输入不为0的提现金额')
       } else {
@@ -48,6 +44,7 @@ export default {
           credit_card: this.cardNumber,
           user_code: localStorage.getItem('userCode'),
           money: this.money,
+          name: this.name,
           type: '2'
         }
         createCheck(params).then(res => {
