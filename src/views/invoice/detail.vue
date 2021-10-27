@@ -6,7 +6,9 @@
       <van-cell v-if="invoiceDetail.status === '4'" title="拒绝理由" :border="false" :value="invoiceDetail.reason" />
       <van-cell title="发票类型" :border="false" :value="invoiceDetail.invoice_type === 1 ? '个人' : '企业'" />
       <van-cell title="发票抬头" :border="false" :value="invoiceDetail.invoice_title" />
+      <van-cell title="关联订单号" :border="false" :value="invoiceDetail.order_number" />
       <van-cell title="邮寄地址" :border="false" :value="invoiceDetail.mailing_address" />
+      <van-cell v-if="invoiceDetail.logistics_number" title="物流单号" :border="false" :value="invoiceDetail.logistics_number" />
       <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.duty_paragraph" title="税务登记号" :border="false" :value="invoiceDetail.duty_paragraph" />
       <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.deposit_bank" title="开户银行" :border="false" :value="invoiceDetail.deposit_bank" />
       <van-cell v-if="invoiceDetail.invoice_type === 2 && invoiceDetail.bank_account" title="银行账号" :border="false" :value="invoiceDetail.bank_account" />

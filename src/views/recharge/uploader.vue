@@ -19,7 +19,7 @@
         </div>
       </van-uploader>
       <van-button @click="submit">确认提交</van-button>
-      <p>说明:上传您的交易凭据后，我们会进行核实，核实时间为一般为1到2个工作日，处理完后会告知您，请及时查看到账情况</p>
+      <p style="margin-top: 3rem">说明:上传您的交易凭据后，我们会进行核实，核实时间为一般为1到2个工作日，处理完后会告知您，请及时查看到账情况</p>
     </div>
   </div>
 </template>
@@ -121,7 +121,7 @@ export default {
   margin: .833rem;
   padding: 1.4167rem 1.25rem 1.5rem 2.083rem;
   position: relative;
-  height: 25rem;
+  height: 29rem;
   h3 {
     font-size: 1.167rem;
     font-weight: 600;

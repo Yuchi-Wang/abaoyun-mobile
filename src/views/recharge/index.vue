@@ -14,7 +14,7 @@
         </van-col>
         <van-col span="12">
           <h5>
-            <span @click="getHistoryBill">查看历史账单</span>
+            <span @click="getHistoryBill">充值记录</span>
             <span> / </span>
             <span @click="handWithdrawalList">提现记录</span>
           </h5>

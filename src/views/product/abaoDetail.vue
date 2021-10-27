@@ -100,17 +100,18 @@
       <h4>选择套餐</h4>
       <van-row gutter="10">
         <van-col v-for="(item, index) in packgeList" :key="item.id" span="8">
-          <span :class="{ active: index === activeIndex }" @click="select(index)">{{ item.name }}</span>
+          <van-button :class="{ active: index === activeIndex }" @click="select(index)">{{ item.name }}</van-button>
         </van-col>
       </van-row>
-      <van-button class="purchase-button" type="info" @click="purchase">购买</van-button>
+      <p v-if="isDisable" class="disable-tip">您已申请过免费试用</p>
+      <van-button class="purchase-button" type="info" @click="purchase" :disabled="isDisable">购买</van-button>
     </van-popup>
     <!-- 选择付款方式 -->
     <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
       <h4>付款方式</h4>
       <van-row gutter="10">
-        <van-col v-for="(item, index) in purchaseList" :key="item.id" span="8">
-          <span :class="{ active: index === paymentIndex }" @click="selectPayment(index)">{{ item.name }}</span>
+        <van-col span="8">
+          <van-button class="active">账户余额</van-button>
         </van-col>
       </van-row>
       <van-submit-bar :price="submitBarPrice" :loading="submitShow" button-text="提交" @submit="submit" />
@@ -124,7 +125,7 @@
           支付金额：
           <span>￥{{ totalPrice }}</span>
         </p>
-        <p>付款方式：{{ payName }}</p>
+        <p>付款方式：账户余额</p>
       </div>
       <van-button type="info" @click="jarDownLoad">jar包下载</van-button>
     </van-popup>
@@ -137,15 +138,14 @@
 </template>
 
 <script>
-import { getDetail, getPackagesList } from '@/api/product'
-import { aliPay, weChatPay } from '@/api/payment'
+import { getToken } from '@/utils/auth'
+import { getUserInfo } from '@/api/user'
 import { createOrder } from '@/api/order'
+import { getDetail, getPackagesList } from '@/api/product'
 export default {
-  name: 'PersonalData',
+  name: 'AbaoDetail',
   data: () => ({
     headerTitle: '阿宝产品',
-    email: '',
-    emailBinding: '',
     useShow: false,
     purchaseShow: false,
     jarPopup: false,
@@ -176,45 +176,43 @@ export default {
       }
     ],
     packgeList: [],
-    purchaseList: [
-      {
-        id: '1',
-        name: '支付宝'
-      },
-      {
-        id: '2',
-        name: '微信'
-      }
-    ],
-    activeIndex: 0,
+    activeIndex: 1,
     submitShow: false,
     resultShow: false,
     productDetail: {},
     paymentAmount: 0,
-    paymentIndex: 0,
     totalPrice: 0,
-    paymentType: '1',
     totalTimes: 0,
-    payName: '',
-    submitBarPrice: 0
+    submitBarPrice: 0,
+    trial_number: 0,
+    isDisable: false
   }),
   mounted() {
+    this.getPersonal()
     this.getProductDetail()
-    this.getPackagesList()
   },
   methods: {
     getAbaoDoc() {
       this.$router.push('/abao-doc')
     },
+    getPersonal() {
+      const userToken = getToken()
+      if (userToken) {
+        const params = {
+          user_code: localStorage.getItem('userCode')
+        }
+        getUserInfo(params).then(res => {
+          this.trial_number = res.data.data.trial_number
+          this.getPackagesList()
+        })
+      }
+    },
     resetPayForm() {
       setTimeout(() => {
-        this.activeIndex = 0
-        this.paymentIndex = 0
-        this.paymentType = '1'
+        this.activeIndex = 1
         this.totalTimes = 0
         this.totalPrice = 0
         this.submitBarPrice = 0
-        this.payName = ''
       }, 300)
     },
     getPackagesList() {
@@ -224,7 +222,13 @@ export default {
         pageSize: 8
       }
       getPackagesList(params).then(res => {
-        this.packgeList = res.data.data.list
+        this.packgeList = res.data.data.list.map(item => {
+          return {
+            name: item.name,
+            times: item.times,
+            money: item.money
+          }
+        })
       })
     },
     getProductDetail() {
@@ -232,14 +236,19 @@ export default {
         product_Id: this.$route.query.id
       }).then(res => {
         this.productDetail = res.data.data
-        this.getPackagesList()
       })
     },
     select(index) {
       this.activeIndex = index
-    },
-    selectPayment(index) {
-      this.paymentIndex = index
+      if (this.activeIndex === 0) {
+        if (this.trial_number <= 0) {
+          this.isDisable = true
+        } else {
+          this.isDisable = false
+        }
+      } else {
+        this.isDisable = false
+      }
     },
     handleExperience() {
       this.$router.push('/chat-room')
@@ -256,46 +265,31 @@ export default {
     },
     submit() {
       this.submitShow = true
-      this.paymentType = this.purchaseList[this.paymentIndex].id
-      this.payName = this.purchaseList[this.paymentIndex].name
-      const params = {
+      const orderParams = {
+        product_name: '诚龙阿宝',
+        price_number: this.productDetail.price,
+        payment_amount: this.totalPrice + '',
+        payment_type: '3',
         phone: '',
-        userID: localStorage.getItem('userCode'),
-        paymentType: this.paymentType,
-        paymentAmount: this.paymentAmount,
-        product_Id: this.$route.query.id
+        order_status: '1',
+        user_code: localStorage.getItem('userCode'),
+        product_id: this.$route.query.id,
+        buy_num: this.totalTimes + '',
+        totalcount: 1
       }
-      this.handlePay(this.paymentType === '1' ? aliPay : weChatPay, params)
-    },
-    handlePay(methods, params) {
-      methods(params).then(res => {
+      createOrder(orderParams).then(res => {
         if (res.data.code === 200) {
-          const orderParams = {
-            product_name: '诚龙阿宝',
-            price_number: this.productDetail.price,
-            payment_amount: this.totalPrice + '',
-            payment_type: this.paymentType,
-            phone: '',
-            user_code: localStorage.getItem('userCode'),
-            product_id: this.$route.query.id,
-            buy_num: this.totalTimes + '',
-            totalcount: 1
-          }
-          createOrder(orderParams).then(res => {
-            if (res.data.code === 200) {
-              this.purchaseShow = false
-              this.resultShow = true
-              setTimeout(() => {
-                this.resetPayForm()
-                this.$router.push('/order-list')
-              }, 2000)
-            } else {
-              this.submitShow = false
-            }
-          }).catch(() => {
-            this.submitShow = false
-          })
+          this.purchaseShow = false
+          this.resultShow = true
+          setTimeout(() => {
+            this.resetPayForm()
+            this.$router.push('/order-list')
+          }, 2000)
+        } else {
+          this.submitShow = false
         }
+      }).catch(() => {
+        this.submitShow = false
       })
     },
     jarDownLoad() {
@@ -687,6 +681,9 @@ export default {
     padding: 1.25rem 1.5rem 2.5rem;
     box-sizing: border-box;
     text-align: center;
+    .disable-tip {
+      color: #666;
+    }
     h4 {
       height: 1.667rem;
       font-size: 1.167rem;
@@ -699,16 +696,17 @@ export default {
     .van-row {
       text-align: center;
       .van-col {
-      margin-bottom: 1.25rem;
-    }
-    span {
-      display: inline-block;
+        margin-bottom: 1.25rem;
+      }
+    .van-button {
       width: 100%;
       height: 2.75rem;
       line-height: 2.75rem;
       background: #F2F2F2;
       border-radius: .333rem;
-      color: #999;
+      color: #666;
+      border-color: #F2F2F2;
+      font-size: 1rem;
     }
     .active {
       background: #3C51FF;
