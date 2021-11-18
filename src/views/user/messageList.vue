@@ -19,14 +19,19 @@
               <van-col span="2">
                 <div class="message-icon" />
               </van-col>
-              <van-col span="16">
+              <van-col span="15">
                 <h4 class="type">{{ item.information_name }}</h4>
                 <p class="people">
                   {{ item.content }}
                 </p>
               </van-col>
-              <van-col span="6">
+              <van-col span="5">
                 <p class="date">{{ item.createtime.substring(0, 10) }}</p>
+              </van-col>
+              <van-col v-if="item.has_read === '0'" span="1" class="unread-point">
+                <van-badge dot>
+                  <div class="child" />
+                </van-badge>
               </van-col>
             </van-row>
           </div>
@@ -187,6 +192,10 @@ export default {
 }
 .delete-button {
   height: 100%;
+}
+.unread-point {
+  display: flex;
+  justify-content: center;
 }
 </style>
 

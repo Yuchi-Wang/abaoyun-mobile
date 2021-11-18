@@ -97,7 +97,7 @@ require('echarts/lib/chart/line')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 require('echarts/lib/component/visualMap')
-import { getChatStatistics, getServiceModeList, getChatList } from '@/api/service'
+import { getChatStatistics, getServiceModeList, getChatExcelList } from '@/api/service'
 export default {
   name: 'ServiceDetail',
   data: () => ({
@@ -257,45 +257,37 @@ export default {
       if (startTimeStr > endTimeStr) {
         Toast('开始时间不能大于结束时间')
       } else {
+        Toast.loading({
+          message: '加载中...',
+          forbidClick: true,
+          loadingType: 'spinner',
+          duration: 0
+        })
         const parmas = {
           user_code: localStorage.getItem('userCode'),
           start_time: this.startDate,
-          end_time: this.endDate
+          end_time: this.endDate,
+          pageIndex: 1,
+          pageSize: 60000
         }
-        getChatList(parmas).then(res => {
-          const responseData = res.data.data
-          if (responseData && responseData.list.length) {
-            this.handleDownload(res.data.data.list)
+        getChatExcelList(parmas).then(res => {
+          if (res.data) {
+            this.handleFileStream(res.data)
+            Toast.clear()
           } else {
-            Toast('暂无查询记录')
+            Toast('暂无记录')
           }
         })
       }
     },
-    handleDownload(list) {
-      this.downloadLoading = true
-      import('@/utils/exportExcel').then(excel => {
-        const tHeader = ['时间', '发送内容', '回复方', '回复内容']
-        const filterVal = ['createtime', 'send_content', 'name', 'receive_content']
-        const data = this.formatJson(filterVal, list)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: `聊天记录`,
-          autoWidth: true,
-          bookType: 'xlsx'
-        })
-        this.downloadLoading = false
-      })
-    },
-    formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'createtime') {
-          return v[j].slice(0, v[j].length - 2)
-        } else {
-          return v[j]
-        }
-      }))
+    handleFileStream(fileStream) {
+      const link = document.createElement('a')
+      const blob = new Blob([fileStream], { type: 'application/vnd.ms-excel' })
+      link.style.display = 'none'
+      link.href = URL.createObjectURL(blob)
+      link.download = '聊天记录'
+      document.body.appendChild(link)
+      link.click()
     }
   }
 }

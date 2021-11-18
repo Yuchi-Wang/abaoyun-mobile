@@ -133,21 +133,3 @@ export function getUserAccount(data) {
     data
   })
 }
-
-// 获取充值记录
-export function getPayAccountList(data) {
-  return request({
-    url: '/paymentManage/getPayAccountList ',
-    method: 'post',
-    data
-  })
-}
-
-// 删除充值记录
-export function deletePayAccount(data) {
-  return request({
-    url: '/paymentManage/deletePayAccount',
-    method: 'post',
-    data
-  })
-}

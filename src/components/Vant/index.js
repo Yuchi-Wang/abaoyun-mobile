@@ -28,7 +28,8 @@ import {
   picker,
   Badge,
   DatetimePicker,
-  Uploader
+  Uploader,
+  ActionSheet
 } from 'vant'
 
 const CustomVant = {
@@ -63,6 +64,7 @@ const CustomVant = {
       .use(picker)
       .use(DatetimePicker)
       .use(Uploader)
+      .use(ActionSheet)
   }
 }
 

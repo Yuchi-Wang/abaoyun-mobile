@@ -114,7 +114,10 @@
           <van-button class="active">账户余额</van-button>
         </van-col>
       </van-row>
-      <van-submit-bar :price="submitBarPrice" :loading="submitShow" button-text="提交" @submit="submit" />
+      <van-checkbox v-model="checked" icon-size="1.147rem" class="policy">
+        我已阅读并同意<span @click="agreePolicy">《产品使用协议》</span>
+      </van-checkbox>
+      <van-submit-bar :disabled="agreeDisable" :price="submitBarPrice" :loading="submitShow" button-text="提交" @submit="submit" />
     </van-popup>
     <!-- 支付结果页 -->
     <van-popup v-model="resultShow" position="bottom" class="pay-result" @click-overlay="resetPayForm">
@@ -138,6 +141,7 @@
 </template>
 
 <script>
+import { Toast } from 'vant'
 import { getToken } from '@/utils/auth'
 import { getUserInfo } from '@/api/user'
 import { createOrder } from '@/api/order'
@@ -185,8 +189,19 @@ export default {
     totalTimes: 0,
     submitBarPrice: 0,
     trial_number: 0,
-    isDisable: false
+    isDisable: false,
+    agreeDisable: true,
+    checked: false
   }),
+  watch: {
+    checked(value) {
+      if (value) {
+        this.agreeDisable = false
+      } else {
+        this.agreeDisable = true
+      }
+    }
+  },
   mounted() {
     this.getPersonal()
     this.getProductDetail()
@@ -194,6 +209,14 @@ export default {
   methods: {
     getAbaoDoc() {
       this.$router.push('/abao-doc')
+    },
+    agreePolicy() {
+      this.$router.push({
+        name: 'applyContract',
+        query: {
+          id: this.$route.query.id
+        }
+      })
     },
     getPersonal() {
       const userToken = getToken()
@@ -213,6 +236,9 @@ export default {
         this.totalTimes = 0
         this.totalPrice = 0
         this.submitBarPrice = 0
+        this.isDisable = false
+        this.agreeDisable = true
+        this.checked = false
       }, 300)
     },
     getPackagesList() {
@@ -254,7 +280,15 @@ export default {
       this.$router.push('/chat-room')
     },
     freeUse() {
-      this.useShow = true
+      const userToken = getToken()
+      if (userToken !== null) {
+        this.useShow = true
+      } else {
+        Toast('您好，请先登录')
+        setTimeout(() => {
+          this.$router.replace('/login')
+        }, 300)
+      }
     },
     purchase() {
       this.totalPrice = Number(this.packgeList[this.activeIndex].money)
@@ -722,9 +756,15 @@ export default {
     border-color: #3C51FF;
     border-radius: 1.667rem;
   }
+  .policy {
+    span {
+      color:#3C51FF;
+    }
+  }
   .van-submit-bar {
     position: relative;
     border-top: 1px solid #F2F2F2;
+    margin-top: .5rem;
     .van-button {
       width: 8.333rem;
       height: 2.75rem;

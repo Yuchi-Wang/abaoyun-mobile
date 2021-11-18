@@ -53,3 +53,13 @@ export function getChatList(data) {
     data
   })
 }
+
+// 下载聊天记录
+export function getChatExcelList(data) {
+  return request({
+    url: '/chatManager/getChatInformationList',
+    method: 'post',
+    responseType: 'blob',
+    data
+  })
+}

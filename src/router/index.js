@@ -155,6 +155,11 @@ const constantRoutes = [
     name: 'contractList'
   },
   {
+    path: '/contract-detail',
+    component: _resolve('contract/detail'),
+    name: 'contractDetail'
+  },
+  {
     path: '/apply-contract',
     component: _resolve('contract/apply'),
     name: 'applyContract'

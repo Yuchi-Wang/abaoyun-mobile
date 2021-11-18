@@ -1,20 +1,32 @@
 <template>
   <div class="main">
     <baseHeader :header-title="headerTitle" />
-    <van-cell-group>
+    <van-cell-group v-if="userDetail">
       <van-cell title="昵称" :label="nickname" :border="false" is-link @click="editData('name')" />
       <van-cell title="邮箱" :label="email" :value="email ? '已绑定' : ''" :border="false" is-link @click="bindEmail" />
       <van-cell title="手机号" :label="mobile" :value="mobile ? '已绑定' : ''" :border="false" is-link @click="changeBinding" />
       <van-cell title="地址" :label="userDetail.adress" :border="false" is-link @click="editData('addr')" />
       <van-cell :title="isHasPassword ? '修改密码': '设置密码'" :border="false" is-link @click="editPassword" />
+      <van-cell v-if="userDetail.user_type" :title="userDetail.user_type === '1' ? '个人用户': '企业用户'" />
+      <van-cell v-if="!userDetail.user_type" title="选择个人/企业" :border="false" is-link @click="selectUserType" />
     </van-cell-group>
+    <van-action-sheet
+      v-model="userTypeShow"
+      :actions="actions"
+      :close-on-click-overlay="false"
+      cancel-text="取消"
+      description="您好，此操作选择后不可再更改，请慎重选择"
+      close-on-click-action
+      @select="onSelect"
+      @cancel="onClose"
+    />
     <van-button type="warning" @click="cancelAccount">注销账户</van-button>
   </div>
 </template>
 
 <script>
 import { Dialog, Toast } from 'vant'
-import { getUserInfo, cancelAccount } from '@/api/user'
+import { getUserInfo, cancelAccount, editUserInfo } from '@/api/user'
 export default {
   name: 'PersonalData',
   data: () => ({
@@ -25,7 +37,20 @@ export default {
     userCode: '',
     nickname: '',
     userDetail: {},
-    isHasPassword: false
+    isHasPassword: false,
+    userTypeShow: false,
+    actions: [
+      {
+        type: '1',
+        name: '个人',
+        subname: '充值与开票将展示个人信息'
+      },
+      {
+        type: '2',
+        name: '企业',
+        subname: '充值与开票将展示公司信息'
+      }
+    ]
   }),
   mounted() {
     this.getPersonal()
@@ -46,6 +71,32 @@ export default {
       }).catch(() => {
         // on cancel
       })
+    },
+    selectUserType() {
+      if (!this.userDetail.user_type.length) {
+        this.userTypeShow = true
+      }
+    },
+    onSelect(item) {
+      Dialog.confirm({
+        title: `确认选择${item.name}用户？`,
+        message: '此操作选择后不可再更改，请慎重选择'
+      }).then(() => {
+        const params = {
+          user_code: localStorage.getItem('userCode'),
+          user_type: item.type
+        }
+        editUserInfo(params).then(res => {
+          this.getPersonal()
+          Toast(res.data.msg)
+        })
+        // on confirm
+      }).catch(() => {
+        // on cancel
+      })
+    },
+    onClose() {
+      this.userType = ''
     },
     getPersonal() {
       const params = {

@@ -6,19 +6,18 @@
         <h4>{{ contractDetail.contract_name }}</h4>
         <p v-html="contractDetail.content" />
       </div>
-      <div class="upload" @click="handleDownLoad">下载合同</div>
+      <div class="upload" @click="turnBuck">返回</div>
     </div>
   </div>
 </template>
 
 <script>
-import { getDetail } from '@/api/contract'
+import { getTemplateList } from '@/api/contract'
 export default {
   name: 'ApplyContract',
   data: () => ({
-    headerTitle: '合同详情',
-    contractDetail: {},
-    baseUrl: window.location.host
+    headerTitle: '使用协议',
+    contractDetail: {}
   }),
   mounted() {
     this.getDetail()
@@ -28,16 +27,14 @@ export default {
       const params = {
         pageIndex: 1,
         pageSize: 10,
-        receiver: '',
         product_id: this.$route.query.id
       }
-      getDetail(params).then(res => {
+      getTemplateList(params).then(res => {
         this.contractDetail = res.data.data.list[0]
       })
     },
-    handleDownLoad() {
-      const downLoadUrl = `http://${this.baseUrl}/v1/uploading/DownloadAndParseImages${this.contractDetail.contract_address}`
-      window.location.href = downLoadUrl
+    turnBuck() {
+      this.$router.back()
     }
   }
 }

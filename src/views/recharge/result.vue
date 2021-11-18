@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  name: 'RechargeWithdrawal',
+  name: 'RechargeResult',
   data: () => ({
     headerTitle: '',
     content: ''

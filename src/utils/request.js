@@ -5,7 +5,7 @@ import router from '@/router'
 
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
-  timeout: 25000,
+  timeout: 60000,
   withCredentials: false
 })
 
@@ -40,7 +40,9 @@ service.interceptors.response.use(
       Toast(res.msg)
       return Promise.reject(res)
     } else {
-      Toast(res.msg)
+      if (res.type !== 'application/excel') {
+        Toast(res.msg)
+      }
       return response
     }
   },

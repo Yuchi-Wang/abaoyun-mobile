@@ -50,7 +50,7 @@ const statusMap = {
   '3': '已通过'
 }
 export default {
-  name: 'BillList',
+  name: 'WithdrawalList',
   filters: {
     statusFilter: status => statusMap[status]
   },

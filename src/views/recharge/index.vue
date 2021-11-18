@@ -6,7 +6,7 @@
         <van-icon name="pending-payment" size="1.5rem" />
         我的账户余额
       </p>
-      <h4>{{ surplusMoney }}元</h4>
+      <h4>{{ surplusMoney.toFixed(2) }}元</h4>
       <van-row>
         <van-col span="12">
           <button class="recharge-button" @click="handleRecharge">充值</button>
@@ -25,20 +25,30 @@
 </template>
 
 <script>
-import { getUserAccount } from '@/api/user'
+import { Toast } from 'vant'
+import { getUserAccount, getUserInfo } from '@/api/user'
 export default {
   name: 'Recharge',
   data: () => ({
     headerTitle: '平台账户',
     paymentIndex: 0,
-    surplusMoney: '0.00'
+    surplusMoney: 0,
+    user_type: ''
   }),
   mounted() {
     this.getUserAccount()
+    this.getUserInfo()
   },
   methods: {
     handleRecharge() {
-      this.$router.push('/recharge-explain')
+      if (this.user_type.length) {
+        this.$router.push('/recharge-explain')
+      } else {
+        Toast('您好，此操作需先在个人中心确认个人用户或企业用户')
+        setTimeout(() => {
+          this.$router.push('/personal-data')
+        }, 1000)
+      }
     },
     getUserAccount() {
       const userCode = localStorage.getItem('userCode')
@@ -48,6 +58,14 @@ export default {
         }
       })
     },
+    getUserInfo() {
+      const params = {
+        user_code: localStorage.getItem('userCode')
+      }
+      getUserInfo(params).then(res => {
+        this.user_type = res.data.data.user_type
+      })
+    },
     getHistoryBill() {
       this.$router.push('/history-bill')
     },
@@ -55,7 +73,11 @@ export default {
       this.$router.push('/recharge-withdrawalList')
     },
     handWithdrawal() {
-      this.$router.push('/recharge-withdrawal')
+      if (this.surplusMoney) {
+        this.$router.push('/recharge-withdrawal')
+      } else {
+        Toast('暂无可提现余额')
+      }
     }
   }
 }

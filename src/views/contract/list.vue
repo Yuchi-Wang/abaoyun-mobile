@@ -5,13 +5,11 @@
       <van-field
         v-model="value"
         maxlength="25"
-        placeholder="请输入合同单号"
-        @focus="inputFocus"
-        @blur="inputBlur"
+        placeholder="请输入合同关联的订单号"
       />
     </div>
     <div class="main-list">
-      <van-pull-refresh v-if="contractList.length" v-model="isLoading" @refresh="onRefresh" style="min-height: 100vh;">
+      <van-pull-refresh v-if="contractList.length" v-model="isRefreshLoading" @refresh="onRefresh" style="min-height: 100vh;">
         <van-list
           v-model="listLoading"
           :finished="listFinished"
@@ -24,18 +22,18 @@
             :name="index"
             :before-close="beforeClose"
           >
-            <div class="list" @click="getDetail(item.id)">
+            <div class="list" @click="getDetail(item.contract_Id)">
               <van-row>
                 <van-col span="20">
-                  <p class="contract-no">合同单号:{{ item.num }}</p>
-                  <h4 class="name">{{ item.name }}</h4>
-                  <p class="validity">合同有效期</p>
-                  <p class="validity-date">{{ item.expirydate }}</p>
+                  <p class="contract-no">关联订单号:{{ item.order_number }}</p>
+                  <h4 class="name">{{ item.contract_name }}</h4>
+                  <p class="validity">申请时间</p>
+                  <p class="validity-date">{{ item.createtime.substring(0, item.createtime.length - 5) }}</p>
                 </van-col>
                 <van-col span="4">
                   <span
                     class="contract-status"
-                    :style="{'color': (item.status === '0' ? '#FF0000':'#2F88FF')}"
+                    :style="{'color': (item.status === '1' ? '#FF0000':'#2F88FF')}"
                   >
                     {{ item.status | contractStatusFilter }}
                   </span>
@@ -48,24 +46,19 @@
           </van-swipe-cell>
         </van-list>
       </van-pull-refresh>
-      <van-empty v-else description="暂无合同信息" />
+      <van-empty v-if="emptyShow" description="暂无合同信息" />
     </div>
-    <van-button
-      v-if="contractList.length"
-      ref="applyButton"
-      class="apply"
-      @click="apply"
-    >
-      申请合同
-    </van-button>
   </div>
 </template>
 
 <script>
 import { Toast, Dialog } from 'vant'
+import { getList, deleteContract } from '@/api/contract'
 const contractStatusMap = {
-  '0': '待签',
-  '1': '已签'
+  '0': '申请成功',
+  '1': '未通过',
+  '2': '已撤销',
+  '3': '申请中'
 }
 export default {
   name: 'ContractList',
@@ -75,32 +68,27 @@ export default {
   data: () => ({
     value: '',
     count: 0,
-    isLoading: false,
+    isRefreshLoading: false,
     listLoading: false,
     listFinished: false,
+    isReflash: false,
+    hasNextPage: false,
+    pageIndex: 1,
+    pageSize: 8,
+    emptyShow: false,
     contractStatusMap,
-    // contractList: []
-    contractList: [
-      {
-        id: 1,
-        num: 'SHF12312321321321',
-        type: '1',
-        status: '1',
-        name: '阿宝语音认证服务',
-        expirydate: '2021-06-22',
-        price: '5000'
-      },
-      {
-        id: 2,
-        num: 'SHF12312321321322',
-        type: '1',
-        status: '0',
-        name: '阿宝语音认证服务',
-        expirydate: '2021-06-22',
-        price: '5000'
-      }
-    ]
+    contractList: []
   }),
+  watch: {
+    value() {
+      this.pageIndex = 1
+      this.contractList = []
+      this.getList()
+    }
+  },
+  mounted() {
+    this.getList()
+  },
   methods: {
     turnBack() {
       if (this.$fromUrl.name === null) {
@@ -109,41 +97,67 @@ export default {
         this.$router.back()
       }
     },
-    inputFocus() {
-      this.$refs.applyButton.setAttribute(
-        'style',
-        'position:relative;left:50%;transform: translateX(-50%); width:20.833rem;background:#3C51FF;color:#fff;border-radius:1.667rem;font-size:1.167rem'
-      )
-    },
-    inputBlur() {
-      this.$refs.applyButton.setAttribute(
-        'style',
-        'position:fixed;left:50%;transform: translateX(-50%); width:20.833rem;background:#3C51FF;color:#fff;border-radius:1.667rem;font-size:1.167rem'
-      )
+    getList() {
+      const params = {
+        pageIndex: this.pageIndex,
+        user_code: localStorage.getItem('userCode'),
+        pageSize: this.pageSize,
+        order_number: this.value
+      }
+      getList(params).then(res => {
+        this.isReflash = true
+        this.listLoading = false
+        const responseData = res.data.data
+        if (responseData && responseData.list.length) {
+          this.emptyShow = false
+          if (this.pageIndex !== 1) {
+            this.contractList = this.contractList.concat(responseData.list)
+          } else {
+            this.contractList = responseData.list
+          }
+          this.hasNextPage = responseData.hasNextPage
+        } else {
+          this.listFinished = true
+          this.emptyShow = true
+        }
+      })
     },
     onLoad() {
-      this.listFinished = true
+      if (this.isRefreshLoading) {
+        this.contractList = []
+        this.isRefreshLoading = false
+      } else {
+        if (this.hasNextPage) {
+          setTimeout(() => {
+            this.pageIndex++
+            this.getList()
+          }, 500)
+        } else {
+          this.listLoading = false
+          this.listFinished = true
+        }
+      }
     },
-    apply() {
-      this.$router.push('/apply-contract')
-    },
-    getDetail(index) {
-    //   this.$router.push({
-    //     name: 'contractDetail',
-    //     query: {
-    //       id: index
-    //     }
-    //   })
+    getDetail(id) {
+      this.$router.push({
+        name: 'contractDetail',
+        query: {
+          id: id
+        }
+      })
     },
     onRefresh() {
-      // this.listFinished = false
-      // this.listLoading = true
-      // this.onLoad()
+      this.isReflash = false
       setTimeout(() => {
-        Toast('刷新成功')
-        this.isLoading = false
-        this.count++
+        this.contractList = []
+        this.pageIndex = 1
+        this.isRefreshLoading = false
+        this.listFinished = false
+        this.getList()
       }, 1000)
+      setTimeout(() => {
+        this.isReflash ? Toast('刷新成功') : Toast('刷新失败')
+      }, 1500)
     },
     beforeClose({ name, position, instance }) {
       switch (position) {
@@ -156,7 +170,14 @@ export default {
           Dialog.confirm({
             message: '确定删除吗？'
           }).then(() => {
-            console.log(name)
+            const deteleId = this.contractList[name].contract_Id
+            deleteContract({ contract_Id: deteleId }).then(res => {
+              Toast(res.data.msg)
+              this.contractList.splice(name, 1)
+              if (this.contractList.length === 0) {
+                this.emptyShow = true
+              }
+            })
             instance.close()
           }).catch(() => {
             // on cancel
@@ -201,13 +222,6 @@ export default {
     -webkit-transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
   }
 }
-.main-list {
-  height:  calc(100% - 11.5rem);
-  overflow: auto;
-}
-.van-pull-refresh {
-  min-height:  calc(100% - 11.5rem);
-}
 .van-swipe-cell {
   margin: .8333rem;
   background: #fff;
@@ -238,11 +252,12 @@ export default {
   .contract-status {
     display: inline-block;
     width: 100%;
-    height: 2.75rem;
-    line-height: 2.75rem;
+    height: 2rem;
+    line-height: 2rem;
     background: #F9F9F8;
     border-radius: 1.4167rem;
     text-align: center;
+    padding: 0 .5rem;
   }
   .validity {
     margin-bottom: .5rem;

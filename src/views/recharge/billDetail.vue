@@ -21,7 +21,7 @@ const billStatusMap = {
   '3': '审核通过'
 }
 export default {
-  name: 'InvoiceDetail',
+  name: 'BillDetail',
   data: () => ({
     detailId: -1,
     headerTitle: '',
@@ -48,16 +48,6 @@ export default {
         } else {
           this.headerTitle = '提现详情'
           this.billStausTitle = '提现'
-        }
-      })
-    },
-    editInvoice() {
-      this.$router.replace({
-        name: 'applyInvoice',
-        query: {
-          orderId: this.billDetail.order_number,
-          invoiceId: this.billDetail.id,
-          type: 'edit'
         }
       })
     }

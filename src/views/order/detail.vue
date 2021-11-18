@@ -11,7 +11,18 @@
       <van-cell title="付款人" :border="false" :value="orderDetail.payPeople" />
       <van-cell title="jar包下载" :border="false" is-link @click="jarPopup = true" />
     </van-cell-group>
-    <van-button v-if="orderDetail.payment_amount" type="primary" class="download-jar" @click="handleContract">申请合同</van-button>
+    <van-button
+    v-if="orderDetail.payment_amount &&
+      orderDetail.contract_status !== '0' &&
+      orderDetail.contract_status !== '1' &&
+      orderDetail.contract_status !== '3'"
+    type="primary"
+    class="download-jar"
+    @click="handleContract"
+    :loading="applyContractLoading"
+    >
+      申请合同
+    </van-button>
     <van-button
       v-if="orderDetail.payment_amount &&
         orderDetail.invoice_status !== '1' &&
@@ -19,6 +30,8 @@
         orderDetail.invoice_status !== '4'"
       type="info"
       @click="applyInvoice"
+      :loading="applyLoading"
+      class="download-jar"
     >
       申请开票
     </van-button>
@@ -30,14 +43,18 @@
 </template>
 
 <script>
+import { Toast } from 'vant'
 import { getDetail } from '@/api/order'
+import { createContract } from '@/api/contract'
 export default {
   name: 'OrderDetail',
   data: () => ({
     detailId: -1,
     headerTitle: '订单详情',
     orderDetail: {},
-    jarPopup: false
+    jarPopup: false,
+    applyLoading: false,
+    applyContractLoading: false
   }),
   mounted() {
     this.detailId = this.$route.query.id
@@ -45,6 +62,7 @@ export default {
   },
   methods: {
     applyInvoice() {
+      this.applyLoading = true
       this.$router.push({
         name: 'applyInvoice',
         query: {
@@ -54,11 +72,22 @@ export default {
       })
     },
     handleContract() {
-      this.$router.push({
-        name: 'applyContract',
-        query: {
-          id: this.orderDetail.product_id
+      this.applyContractLoading = true
+      const params = {
+        user_code: localStorage.getItem('userCode'),
+        status: '3',
+        contract_name: this.orderDetail.product_name,
+        order_number: this.orderDetail.order_number
+      }
+      createContract(params).then(res => {
+        if (res.data.code === 200) {
+          Toast('已发起申请')
+          this.$router.replace('/contract-list')
+        } else {
+          this.applyContractLoading = false
         }
+      }).finally(() => {
+        this.applyContractLoading = false
       })
     },
     getDetail() {
@@ -76,6 +105,12 @@ export default {
   border-radius: .6667rem;
 }
 .van-button {
+  background: #3C51FF;
+  border-color: #3C51FF;
+  color: #fff;
+}
+.download-jar {
+  color: #fff;
   display: block;
   margin:3.083rem auto 0;
   width: 20.8333rem;
@@ -84,9 +119,6 @@ export default {
   background: #3C51FF;
   border-color: #3C51FF;
   border-radius: 1.6667rem;
-}
-.download-jar {
-  color: #fff;
 }
 .jar-popup {
   width: 20rem;

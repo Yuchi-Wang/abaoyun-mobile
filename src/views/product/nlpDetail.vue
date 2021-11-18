@@ -118,6 +118,7 @@
 </template>
 
 <script>
+import { Toast } from 'vant'
 import { getToken } from '@/utils/auth'
 import { getUserInfo } from '@/api/user'
 import { createOrder } from '@/api/order'
@@ -198,8 +199,7 @@ export default {
           return {
             name: item.name,
             times: item.times,
-            money: item.money,
-            isUse: true
+            money: item.money
           }
         })
       })
@@ -210,10 +210,19 @@ export default {
         this.totalTimes = 0
         this.totalPrice = 0
         this.submitBarPrice = 0
+        this.isDisable = false
       }, 300)
     },
     freeUse() {
-      this.useShow = true
+      const userToken = getToken()
+      if (userToken !== null) {
+        this.useShow = true
+      } else {
+        Toast('您好，请先登录')
+        setTimeout(() => {
+          this.$router.replace('/login')
+        }, 300)
+      }
     },
     getProductDetail() {
       getDetail({
