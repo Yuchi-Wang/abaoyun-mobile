@@ -3,6 +3,16 @@
     <van-swipe :loop="false" class="main-page" :style="{'height': windowsHeight + 'px'}" vertical>
       <van-swipe-item class="first-page">
         <div class="first-banner" :style="{backgroundImage: `url(${$imgUrl}${abaoDetail.imageUrl})`}">
+          <van-notice-bar v-if="noticeShow" left-icon="volume-o" background="rgba(0,0,0,.5)" color="#fff" :scrollable="false">
+            <van-swipe
+              vertical
+              class="notice-swipe"
+              :autoplay="3000"
+              :show-indicators="false"
+            >
+              <van-swipe-item v-for="item in noticeList" :key="item.id" @click="getNoticeDetail(item.notice_id)">{{ item.title }}</van-swipe-item>
+            </van-swipe>
+          </van-notice-bar>
           <h4>
             <img src="../../assets/img/home/home-logo.svg">
             阿宝云
@@ -77,6 +87,7 @@
 
 <script>
 import { getList } from '@/api/product'
+import { getList as getNoticeList } from '@/api/notice'
 export default {
   name: 'Home',
   data: () => ({
@@ -100,14 +111,30 @@ export default {
     ],
     showPopup: false,
     abaoDetail: '',
-    nlpDetail: ''
+    nlpDetail: '',
+    noticeList: [],
+    noticeShow: false
   }),
   mounted() {
     this.getProductList()
+    this.getNoticeList()
   },
   methods: {
     consultUs() {
       this.showPopup = true
+    },
+    getNoticeList() {
+      const params = {
+        pageIndex: 1,
+        pageSize: 3,
+        flag: 1
+      }
+      getNoticeList(params).then(res => {
+        if (res.data.data.list.length) {
+          this.noticeShow = true
+          this.noticeList = res.data.data.list
+        }
+      })
     },
     getProductList() {
       const params = {
@@ -137,6 +164,14 @@ export default {
         name: 'nlpDetail',
         query: {
           id: this.nlpDetail.product_Id
+        }
+      })
+    },
+    getNoticeDetail(id) {
+      this.$router.push({
+        name: 'noticeDetail',
+        query: {
+          id: id
         }
       })
     }
@@ -200,7 +235,7 @@ export default {
       padding: 1rem;
       box-sizing: border-box;
       h3 {
-        margin-top: 8.5rem;
+        margin-top: 6.5rem;
         line-height: 2.75rem;
         text-align: center;
         font-size: 2rem;
@@ -219,6 +254,7 @@ export default {
         color: #fff;
         font-weight: 400;
         font-size: 1.167rem;
+        margin-top: 2rem;
         margin-bottom: 2rem;
         img {
           vertical-align: text-top;
@@ -391,6 +427,24 @@ export default {
       border-color: #000;
       border-radius: 2rem;
       font-size: 1.083rem;
+    }
+  }
+}
+
+.van-notice-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  .notice-swipe {
+    height: 2rem;
+    line-height: 2rem;
+    width: 100%;
+    .van-swipe-item {
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
     }
   }
 }

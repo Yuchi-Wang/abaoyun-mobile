@@ -17,7 +17,9 @@
         </van-col>
       </van-row>
       <van-cell title="请选择查看时间" is-link :value="dateText" @click="dataShow = true" />
-      <div id="myChart" :style="{width: '100%', height: '250px'}" />
+      <div>
+        <div id="myChart" :style="{width: '100%', height: '250px'}" />
+      </div>
     </div>
     <ul v-if="sdkapiList.length" class="sdk-api">
       <li v-for="(item, index) in sdkapiList" :key="item.id">
@@ -136,10 +138,10 @@ export default {
     countList: [],
     startDate: '',
     endDate: '',
-    minStartDate: new Date(2020, 0, 1),
+    minStartDate: new Date(new Date().getTime() - 3600 * 1000 * 24 * 90),
     maxStartDate: new Date(),
     currentStartDate: new Date(),
-    minEndDate: new Date(2020, 0, 1),
+    minEndDate: new Date(new Date().getTime() - 3600 * 1000 * 24 * 90),
     maxEndDate: new Date(),
     currentEndDate: new Date(),
     endShow: false,
@@ -179,6 +181,10 @@ export default {
         yAxis: {
           type: 'value'
         },
+        grid: {
+          left: 12,
+          containLabel: true
+        },
         series: [{
           type: 'line',
           data: this.countList,
@@ -204,7 +210,7 @@ export default {
       getChatStatistics(params).then(res => {
         this.serviceList[0].times = res.data.data.todayTime
         this.serviceList[1].times = res.data.data.surplusTime
-        this.dateList = res.data.data.aBaoService.map(item => item.date.replace(/\b(0+)/gi, ''))
+        this.dateList = res.data.data.aBaoService.map(item => item.date.replace(/\b(0+)/gi, '').replace(/\-/g, '.') )
         this.countList = res.data.data.aBaoService.map(item => item.count)
         this.drawLine()
       })

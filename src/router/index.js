@@ -190,6 +190,11 @@ const constantRoutes = [
     name: 'editPassword'
   },
   {
+    path: '/edit-paymentPwd',
+    component: _resolve('user/editPaymentPwd'),
+    name: 'editpaymentPwd'
+  },
+  {
     path: '/forgot-password',
     component: _resolve('user/forgotPassword'),
     name: 'forgotPassword'
@@ -235,9 +240,19 @@ const constantRoutes = [
     name: 'rechargeBillDetail'
   },
   {
+    path: '/forgot-paymentpwd',
+    component: _resolve('user/forgotPaymentPwd'),
+    name: 'forgotPaymentPwd'
+  },
+  {
     path: '/abao-serve',
     component: _resolve('service/demo'),
     name: 'serviceDemo'
+  },
+  {
+    path: '/notice-detail',
+    component: _resolve('user/noticeDetail'),
+    name: 'noticeDetail'
   }
 ]
 

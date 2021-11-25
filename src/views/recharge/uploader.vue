@@ -3,9 +3,12 @@
     <baseHeader :header-title="headerTitle" />
     <div class="main">
       <h3>上传交易凭据</h3>
-      <van-field v-model="bankCardNum" type="digit" label="银行卡号：" placeholder="请输入银行卡号" maxlength="20" />
-      <van-field v-model="money" type="digit" label="充值金额：" placeholder="请输入充值金额" maxlength="10" />
-      <van-field v-model="name" label="姓名" placeholder="请输入该卡号绑定的姓名" :border="false" maxlength="10" />
+      <van-field v-model="bankCardNum" type="digit" clearable label="银行卡号：" placeholder="请输入银行卡号" maxlength="20" />
+      <ul class="card-list" v-if="cardShow">
+        <li v-for="item in cardList" :key="item.id" @click="selectCard(item.credit_card)">{{ item.credit_card }}</li>
+      </ul>
+      <van-field v-model="money" type="digit" label="充值金额：" clearable placeholder="请输入充值金额" maxlength="10" />
+      <van-field v-model="name" label="姓名" placeholder="请输入该卡号绑定的姓名" clearable :border="false" maxlength="10" />
       <van-uploader
         v-model="fileList"
         multiple
@@ -28,7 +31,7 @@
 import Vue from 'vue'
 import { Toast } from 'vant'
 import { post } from '@/utils/request'
-import { createCheck } from '@/api/check'
+import { createCheck, getBankCardNumList } from '@/api/check'
 Vue.prototype.$post = post
 export default {
   name: 'RechargeUploader',
@@ -41,11 +44,49 @@ export default {
     isUploadFile: false,
     bankCardNum: '',
     money: '',
-    name: ''
+    name: '',
+    cardList: [],
+    cardShow: false
   }),
+  watch: {
+    bankCardNum(value) {
+      this.getBankCardNumList(value)
+    }
+  },
   methods: {
     getHistoryBill() {
       this.$router.push('/history-bill')
+    },
+    getBankCardNumList(num) {
+      if (!num.length) {
+        this.cardList = []
+        this.cardShow = false
+      } else {
+        const params = {
+          credit_card: num,
+          user_code: localStorage.getItem('userCode')
+        }
+        getBankCardNumList(params).then(res => {
+          const result = res.data.data
+          if (result.list && result.list.length) {
+            if (num === result.list[0].credit_card) {
+              this.cardList = []
+              this.cardShow = false
+            } else {
+              this.cardList = result.list
+              this.cardShow = true
+            }
+          } else {
+            this.cardList = []
+            this.cardShow = false
+          }
+        })
+      }
+    },
+    selectCard(num) {
+      this.bankCardNum = num
+      this.cardList = []
+      this.cardShow = false
     },
     onRead(file) {
       this.isUploadFile = true
@@ -128,6 +169,24 @@ export default {
     color: #000;
     line-height: 1.667rem;
     text-align: center;
+  }
+  .card-list {
+    position: absolute;
+    left: 9rem;
+    z-index: 999;
+    background: #fff;
+    width: calc(100% - 13rem);
+    border: 1px solid #ebedf0;
+    border-top: none;
+    li {
+      padding: .2rem;
+      height: 1.677rem;
+      line-height: 1.677rem;
+      font-size: 1.167rem;
+      &:hover {
+        background: #F5F5F6;
+      }
+    }
   }
   .van-uploader {
     margin-top: 1rem;

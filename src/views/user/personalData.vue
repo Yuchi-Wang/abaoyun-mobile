@@ -6,7 +6,8 @@
       <van-cell title="邮箱" :label="email" :value="email ? '已绑定' : ''" :border="false" is-link @click="bindEmail" />
       <van-cell title="手机号" :label="mobile" :value="mobile ? '已绑定' : ''" :border="false" is-link @click="changeBinding" />
       <van-cell title="地址" :label="userDetail.adress" :border="false" is-link @click="editData('addr')" />
-      <van-cell :title="isHasPassword ? '修改密码': '设置密码'" :border="false" is-link @click="editPassword" />
+      <van-cell :title="isHasPassword ? '修改登录密码': '设置登录密码'" :border="false" is-link @click="editPassword" />
+      <van-cell :title="isHasPaymentPassword ? '修改支付密码': '设置支付密码'" :border="false" is-link @click="editPaymentPwd" />
       <van-cell v-if="userDetail.user_type" :title="userDetail.user_type === '1' ? '个人用户': '企业用户'" />
       <van-cell v-if="!userDetail.user_type" title="选择个人/企业" :border="false" is-link @click="selectUserType" />
     </van-cell-group>
@@ -38,6 +39,7 @@ export default {
     nickname: '',
     userDetail: {},
     isHasPassword: false,
+    isHasPaymentPassword: false,
     userTypeShow: false,
     actions: [
       {
@@ -70,6 +72,14 @@ export default {
         })
       }).catch(() => {
         // on cancel
+      })
+    },
+    editPaymentPwd() {
+      this.$router.push({
+        name: 'editpaymentPwd',
+        query: {
+          operation: this.isHasPaymentPassword ? 'edit' : 'set'
+        }
       })
     },
     selectUserType() {
@@ -108,6 +118,7 @@ export default {
         this.mobile = this.userDetail.phone
         this.nickname = this.userDetail.nickname
         this.isHasPassword = !!this.userDetail.user_password
+        this.isHasPaymentPassword = !!this.userDetail.payment_code
       })
     },
     editData(name) {

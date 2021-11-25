@@ -3,7 +3,7 @@
   <div>
     <baseHeader :header-title="headerTitle" />
     <div ref="chatContent" class="chat-content">
-      <van-pull-refresh v-model="isLoading" @refresh="onRefresh" style="min-height: 100vh;">
+      <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
         <div>
             <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
             <!-- 对方 -->
@@ -159,6 +159,9 @@ footer {
   padding: 1.25rem 1.25rem 8rem 1.25rem;
   height: calc(100% - 13rem);
   overflow: auto;
+  .van-pull-refresh {
+    min-height: calc(100vh - 13rem);
+  }
   .word {
     display: flex;
     margin-bottom: .583rem;

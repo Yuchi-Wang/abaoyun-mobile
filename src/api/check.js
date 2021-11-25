@@ -35,3 +35,12 @@ export function deleteCheck(data) {
     data
   })
 }
+
+// 获取银行卡列表
+export function getBankCardNumList(data) {
+  return request({
+    url: '/CheckManage/getCreditCardList',
+    method: 'post',
+    data
+  })
+}

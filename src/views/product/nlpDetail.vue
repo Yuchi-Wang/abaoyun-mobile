@@ -88,13 +88,23 @@
     </van-popup>
     <!-- 选择付款方式 -->
     <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
-      <h4>付款方式</h4>
+      <van-field v-model="paymentPwd" type="password" label="支付密码：" maxlength="16" class="pwd-input" placeholder="请输入当前支付密码" />
+      <p class="fotgot-or-set-pwd">
+        <span v-if="isHasPaymentPwd" @click="forgotPwd" style="text-align: right">忘记密码？</span>
+        <span v-else style="text-align: left">当前账户未设置支付密码，<i @click="setPaymentPwd">请点击设置</i></span>
+      </p>
       <van-row gutter="10">
+        <van-col span="6">
+          <h4 style="line-height:2.5rem">付款方式：</h4>
+        </van-col>
         <van-col span="8">
           <van-button class="active">账户余额</van-button>
         </van-col>
       </van-row>
-      <van-submit-bar :price="submitBarPrice" :loading="submitShow" button-text="提交" @submit="submit" />
+      <van-checkbox v-model="checked" icon-size="1.147rem" class="policy">
+        我已阅读并同意<span @click="agreePolicy">《产品使用协议》</span>
+      </van-checkbox>
+      <van-submit-bar :disabled="agreeDisable" :price="submitBarPrice" :loading="submitShow" button-text="提交" @submit="submit" />
     </van-popup>
     <!-- 支付结果页 -->
     <van-popup v-model="resultShow" position="bottom" class="pay-result" @click-overlay="resetPayForm">
@@ -166,8 +176,21 @@ export default {
     totalTimes: 0,
     submitBarPrice: 0,
     trial_number: 0,
-    isDisable: false
+    isDisable: false,
+    agreeDisable: true,
+    checked: false,
+    paymentPwd: '',
+    isHasPaymentPwd: false
   }),
+  watch: {
+    checked(value) {
+      if (value) {
+        this.agreeDisable = false
+      } else {
+        this.agreeDisable = true
+      }
+    }
+  },
   mounted() {
     this.getProductDetail()
     this.getPersonal()
@@ -175,6 +198,20 @@ export default {
   methods: {
     getNlpDoc() {
       this.$router.push('/nlp-doc')
+    },
+    agreePolicy() {
+      this.$router.push({
+        name: 'applyContract',
+        query: {
+          id: this.$route.query.id
+        }
+      })
+    },
+    forgotPwd() {
+      this.$router.push({
+        name: 'forgotPaymentPwd',
+        query: { redirect: this.$router.currentRoute.fullPath }
+      })
     },
     getPersonal() {
       const userToken = getToken()
@@ -184,9 +221,19 @@ export default {
         }
         getUserInfo(params).then(res => {
           this.trial_number = res.data.data.trial_number
+          this.trial_number <= 0 ? this.activeIndex = 1 : this.activeIndex = 0
+          this.isHasPaymentPwd = !!res.data.data.payment_code
           this.getPackagesList()
         })
       }
+    },
+    setPaymentPwd() {
+      this.$router.push({
+        name: 'editpaymentPwd',
+        query: {
+          operation: 'set'
+        }
+      })    
     },
     getPackagesList() {
       const params = {
@@ -206,11 +253,14 @@ export default {
     },
     resetPayForm() {
       setTimeout(() => {
-        this.activeIndex = 1
+        this.activeIndex = this.trial_number <= 0 ? 1 : 0
         this.totalTimes = 0
         this.totalPrice = 0
         this.submitBarPrice = 0
+        this.paymentPwd = ''
         this.isDisable = false
+        this.agreeDisable = true
+        this.checked = false
       }, 300)
     },
     freeUse() {
@@ -259,6 +309,7 @@ export default {
         payment_type: '3',
         order_status: '1',
         phone: '',
+        payment_code: this.paymentPwd,
         user_code: localStorage.getItem('userCode'),
         product_id: this.$route.query.id,
         buy_num: this.totalTimes + '',
@@ -630,6 +681,27 @@ export default {
     padding: 1.25rem 1.5rem 2.5rem;
     box-sizing: border-box;
     text-align: center;
+    .disable-tip {
+      color: #666;
+    }
+    .pwd-input {
+      padding: .75rem 0;
+      margin-bottom: .5rem;
+      &:after {
+        left: 0;
+        right: 0;
+      }
+    }
+    .fotgot-or-set-pwd {
+      margin-bottom: .4rem;
+      color: #666;
+      span {
+        display: block;
+      }
+      i {
+        color: #0008FF;
+      }
+    }
     h4 {
       height: 1.667rem;
       font-size: 1.167rem;
@@ -646,8 +718,8 @@ export default {
       }
       .van-button {
         width: 100%;
-        height: 2.75rem;
-        line-height: 2.75rem;
+        height: 2.5rem;
+        line-height: 2.5rem;
         background: #F2F2F2;
         border-radius: .333rem;
         color: #666;
@@ -667,6 +739,11 @@ export default {
       background: #3C51FF;
       border-color: #3C51FF;
       border-radius: 1.667rem;
+    }
+    .policy {
+      span {
+        color:#3C51FF;
+      }
     }
     .van-submit-bar {
       position: relative;

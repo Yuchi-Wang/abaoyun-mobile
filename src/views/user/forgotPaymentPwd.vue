@@ -37,7 +37,7 @@
           class="mobile"
           type="password"
           maxlength="16"
-          placeholder="请输入密码"
+          placeholder="请输入新支付密码"
         />
       </van-tab>
       <van-tab title="邮箱找回">
@@ -68,7 +68,7 @@
           class="mobile"
           type="password"
           maxlength="16"
-          placeholder="请输入新密码"
+          placeholder="请输入新支付密码"
         />
       </van-tab>
     </van-tabs>
@@ -78,7 +78,7 @@
 
 <script>
 import { Toast } from 'vant'
-import { getMobileMessage, getEmailMessage, foundPassword } from '@/api/user'
+import { getMobileMessage, getEmailMessage, foundPaymentPwd } from '@/api/user'
 export default {
   name: 'ForgotPassword',
   data: () => ({
@@ -89,8 +89,7 @@ export default {
     password: '',
     active: 0,
     isConutDownShow: false,
-    time: -1,
-    passwordTest: /^(?=.*[0-9].*)(?=.*[A-Z].*)(?=.*[a-z].*).{6,16}$/
+    time: -1
   }),
   methods: {
     handleChange() {
@@ -119,7 +118,7 @@ export default {
       } else {
         const params = {
           phone: this.mobile,
-          type: '3'
+          type: '4'
         }
         getMobileMessage(params).then(res => {
           Toast(res.data.msg)
@@ -134,8 +133,8 @@ export default {
       } else {
         const params = {
           mailTo: this.email,
-          title: '【阿宝云邮箱验证】找回密码',
-          type: '3'
+          title: '【阿宝云邮箱验证】找回支付密码',
+          type: '4'
         }
         getEmailMessage(params).then(res => {
           Toast(res.data.msg)
@@ -153,20 +152,20 @@ export default {
     submit() {
       if (this.password === '') {
         Toast('密码不能为空')
-      } else if (!this.passwordTest.test(this.newPassword)) {
-        Toast('至少包含6位字符、字母数字组合、1位大写字母')
+      } else if (this.password.length < 6) {
+        Toast('密码不能低于6位')
       } else {
         // 1手机找回，2邮箱找回
         const params = {
           phone_email: this.active ? this.email : this.mobile,
-          password: this.password,
+          payment_code: this.password,
           type: this.active + 1 + '',
           code: this.vcCode
         }
-        foundPassword(params).then(res => {
+        foundPaymentPwd(params).then(res => {
           if (res.data.code === 200) {
             Toast(res.data.msg)
-            this.$router.replace('/login')
+            this.$router.replace(this.$route.query.redirect)
           }
         })
       }

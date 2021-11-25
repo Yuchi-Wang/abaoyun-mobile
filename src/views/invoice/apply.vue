@@ -3,9 +3,9 @@
     <baseHeader :header-title="headerTitle" />
     <van-cell-group v-if="userType === '1'">
       <van-cell title="发票类型" :border="false" value="增值税普通发票" />
-       <van-cell title="用户类型" :border="false" value="个人用户" />
-      <van-field v-model="invoiceDetail.invoice_title" label="发票抬头" :border="false" placeholder="请填写需要开具发票的姓名" input-align="right" />
-      <van-field v-model="invoiceDetail.mailing_address" label="邮寄地址" :border="false" placeholder="请填写需要开具发票的邮寄地址" input-align="right" />
+      <van-cell title="用户类型" :border="false" value="个人用户" />
+      <van-field v-model="invoiceDetail.invoice_title" label="发票抬头" :border="false" placeholder="请填写需要开具发票的姓名" maxlength="10" input-align="right" />
+      <van-field v-model="invoiceDetail.mailing_address" label="邮寄地址" :border="false" placeholder="请填写需要开具发票的邮寄地址" maxlength="50" input-align="right" />
       <van-cell v-if="invoiceDetail.invoice_amount" title="开票金额">
         <template #right-icon>
           <span class="invoice-price">
@@ -18,12 +18,12 @@
     <van-cell-group v-if="userType === '2'">
       <van-cell title="发票类型" :border="false" value="增值税普通发票" />
       <van-cell title="用户类型" :border="false" value="企业用户" />
-      <van-field v-model="invoiceDetail.invoice_title" label="发票抬头" :border="false" placeholder="请填写需要开具发票的企业名称" input-align="right" />
-      <van-field v-model="invoiceDetail.duty_paragraph" label="税务登记号" :border="false" placeholder="纳税人识别号" input-align="right" />
-      <van-field v-model="invoiceDetail.deposit_bank" label="开户银行" :border="false" placeholder="选填" input-align="right" />
-      <van-field v-model="invoiceDetail.bank_account" label="银行账号" :border="false" placeholder="选填" input-align="right" />
-      <van-field v-model="invoiceDetail.company_adress" label="企业地址" :border="false" placeholder="选填" input-align="right" />
-      <van-field v-model="invoiceDetail.company_phone" label="企业电话" :border="false" placeholder="选填" input-align="right" />
+      <van-field v-model="invoiceDetail.invoice_title" label="发票抬头" :border="false" placeholder="请填写需要开具发票的企业名称" maxlength="20" input-align="right" />
+      <van-field v-model="invoiceDetail.duty_paragraph" label="税务登记号" :border="false" placeholder="纳税人识别号" input-align="right" maxlength="20" />
+      <van-field v-model="invoiceDetail.deposit_bank" label="开户银行" :border="false" placeholder="选填" input-align="right" maxlength="20" />
+      <van-field v-model="invoiceDetail.bank_account" label="银行账号" :border="false" placeholder="选填" input-align="right" maxlength="20" />
+      <van-field v-model="invoiceDetail.company_adress" label="企业地址" :border="false" placeholder="选填" input-align="right" maxlength="50" />
+      <van-field v-model="invoiceDetail.company_phone" label="企业电话" :border="false" placeholder="选填" input-align="right" maxlength="15" />
       <van-field v-model="invoiceDetail.mailing_address" label="邮寄地址" :border="false" placeholder="请填写需要开具发票的邮寄地址" input-align="right" />
       <van-cell v-if="invoiceDetail.invoice_amount" title="开票金额">
         <template #right-icon>
@@ -34,7 +34,7 @@
       </van-cell>
       <van-cell title="发票内容" value="明细" />
     </van-cell-group>
-    <van-button  v-if="userType" type="info" :loading="applyLoading" @click="applyInvoice">确  认</van-button>
+    <van-button v-if="userType" type="info" :loading="applyLoading" @click="applyInvoice">确  认</van-button>
   </div>
 </template>
 

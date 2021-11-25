@@ -125,6 +125,24 @@ export function foundPassword(data) {
   })
 }
 
+// 修改支付密码
+export function updatePaymentPwd(data) {
+  return request({
+    url: '/userManage/updatePaymentCode',
+    method: 'post',
+    data
+  })
+}
+
+// 找回支付密码
+export function foundPaymentPwd(data) {
+  return request({
+    url: '/loginType/phoneOrEmailPaymentCodeRetrieve',
+    method: 'post',
+    data
+  })
+}
+
 //  查询账户信息
 export function getUserAccount(data) {
   return request({

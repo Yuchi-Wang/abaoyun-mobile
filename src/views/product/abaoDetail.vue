@@ -108,8 +108,15 @@
     </van-popup>
     <!-- 选择付款方式 -->
     <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
-      <h4>付款方式</h4>
+      <van-field v-model="paymentPwd" type="password" label="支付密码：" maxlength="16" class="pwd-input" placeholder="请输入当前支付密码" />
+      <p class="fotgot-or-set-pwd">
+        <span v-if="isHasPaymentPwd" @click="forgotPwd" style="text-align: right">忘记密码？</span>
+        <span v-else style="text-align: left">当前账户未设置支付密码，<i @click="setPaymentPwd">请点击设置</i></span>
+      </p>
       <van-row gutter="10">
+        <van-col span="6">
+          <h4 style="line-height:2.5rem">付款方式：</h4>
+        </van-col>
         <van-col span="8">
           <van-button class="active">账户余额</van-button>
         </van-col>
@@ -191,7 +198,9 @@ export default {
     trial_number: 0,
     isDisable: false,
     agreeDisable: true,
-    checked: false
+    checked: false,
+    paymentPwd: '',
+    isHasPaymentPwd: false
   }),
   watch: {
     checked(value) {
@@ -218,6 +227,12 @@ export default {
         }
       })
     },
+    forgotPwd() {
+      this.$router.push({
+        name: 'forgotPaymentPwd',
+        query: { redirect: this.$router.currentRoute.fullPath }
+      })
+    },
     getPersonal() {
       const userToken = getToken()
       if (userToken) {
@@ -226,16 +241,19 @@ export default {
         }
         getUserInfo(params).then(res => {
           this.trial_number = res.data.data.trial_number
+          this.trial_number <= 0 ? this.activeIndex = 1 : this.activeIndex = 0
+          this.isHasPaymentPwd = !!res.data.data.payment_code
           this.getPackagesList()
         })
       }
     },
     resetPayForm() {
       setTimeout(() => {
-        this.activeIndex = 1
+        this.activeIndex = this.trial_number <= 0 ? 1 : 0
         this.totalTimes = 0
         this.totalPrice = 0
         this.submitBarPrice = 0
+        this.paymentPwd = ''
         this.isDisable = false
         this.agreeDisable = true
         this.checked = false
@@ -297,6 +315,14 @@ export default {
       this.useShow = false
       this.purchaseShow = true
     },
+    setPaymentPwd() {
+      this.$router.push({
+        name: 'editpaymentPwd',
+        query: {
+          operation: 'set'
+        }
+      })
+    },
     submit() {
       this.submitShow = true
       const orderParams = {
@@ -305,6 +331,7 @@ export default {
         payment_amount: this.totalPrice + '',
         payment_type: '3',
         phone: '',
+        payment_code: this.paymentPwd,
         order_status: '1',
         user_code: localStorage.getItem('userCode'),
         product_id: this.$route.query.id,
@@ -718,6 +745,24 @@ export default {
     .disable-tip {
       color: #666;
     }
+    .pwd-input {
+      padding: .75rem 0;
+      margin-bottom: .5rem;
+      &:after {
+        left: 0;
+        right: 0;
+      }
+    }
+    .fotgot-or-set-pwd {
+      margin-bottom: .4rem;
+      color: #666;
+      span {
+        display: block;
+      }
+      i {
+        color: #0008FF;
+      }
+    }
     h4 {
       height: 1.667rem;
       font-size: 1.167rem;
@@ -734,8 +779,8 @@ export default {
       }
     .van-button {
       width: 100%;
-      height: 2.75rem;
-      line-height: 2.75rem;
+      height: 2.5rem;
+      line-height: 2.5rem;
       background: #F2F2F2;
       border-radius: .333rem;
       color: #666;

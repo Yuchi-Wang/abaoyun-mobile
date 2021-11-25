@@ -2,10 +2,10 @@
   <div>
     <baseHeader :header-title="headerTitle" />
     <van-cell-group v-if="!isSetPassword">
-      <van-field v-model="originPassword" type="password" label="请输入原密码" maxlength="16" placeholder="请输入当前登录密码" />
+      <van-field v-model="originPassword" type="password" label="原密码" maxlength="16" placeholder="请输入当前支付密码" />
     </van-cell-group>
     <van-cell-group>
-      <van-field v-model="newPassword" type="password" :label="label" maxlength="16" :placeholder="'请' + label" />
+      <van-field v-model="newPassword" type="password" :label="label" maxlength="16" :placeholder="'请' + placeholder" />
     </van-cell-group>
     <van-button round type="info" @click="save">保存</van-button>
   </div>
@@ -13,9 +13,9 @@
 
 <script>
 import { Toast } from 'vant'
-import { editUserInfo, getUserInfo } from '@/api/user'
+import { editUserInfo, getUserInfo, updatePaymentPwd } from '@/api/user'
 export default {
-  name: 'EditPassword',
+  name: 'EditPaymentPwd',
   data: () => ({
     headerTitle: '',
     originPassword: '',
@@ -23,7 +23,7 @@ export default {
     isSetPassword: false,
     userDetail: {},
     label: '',
-    passwordTest: /^(?=.*[0-9].*)(?=.*[A-Z].*)(?=.*[a-z].*).{6,16}$/
+    placeholder: ''
   }),
   mounted() {
     this.init()
@@ -31,8 +31,9 @@ export default {
   methods: {
     init() {
       if (this.$route.query.operation === 'set') { this.isSetPassword = true }
-      this.headerTitle = this.isSetPassword ? '设置登录密码' : '修改登录密码'
+      this.headerTitle = this.isSetPassword ? '设置支付密码' : '修改支付密码'
       this.label = this.isSetPassword ? '设置新密码' : '确认新密码'
+      this.placeholder = this.isSetPassword ? '设置新支付密码' : '确认支付新密码'
       if (!this.isSetPassword) {
         getUserInfo({ user_code: localStorage.getItem('userCode') }).then(res => {
           this.userDetail = res.data.data
@@ -42,31 +43,36 @@ export default {
     editPassword() {
       const params = {
         user_code: localStorage.getItem('userCode'),
-        user_password: this.newPassword
+        payment_code: this.newPassword
       }
       editUserInfo(params).then(res => {
         if (res.data.code === 200) {
-          Toast('设置密码成功')
+          Toast('设置支付密码成功')
           this.$router.replace('/personal-data')
         }
+      })
+    },
+    updatePaymentPwd() {
+      const params = {
+        user_code: localStorage.getItem('userCode'),
+        oldPassword: this.originPassword,
+        newPassword: this.newPassword
+      }
+      updatePaymentPwd(params).then(res => {
+        Toast('修改支付密码成功')
+        this.$router.replace('/personal-data')
       })
     },
     save() {
       if (this.newPassword === '') {
         Toast('密码不能为空')
-      } else if (!this.passwordTest.test(this.newPassword)) {
-        Toast('至少包含6位字符、字母数字组合、1位大写字母')
+      } else if (this.newPassword.length < 6) {
+        Toast('密码不得低于6位字符')
       } else {
         if (this.isSetPassword) {
           this.editPassword()
         } else {
-          if (this.originPassword !== this.userDetail.user_password) {
-            Toast('原密码错误')
-          } else if (this.newPassword === this.userDetail.user_password) {
-            Toast('新密码不能和原密码相同')
-          } else {
-            this.editPassword()
-          }
+          this.updatePaymentPwd()
         }
       }
     }
