@@ -2,7 +2,8 @@
   <div>
     <baseHeader :header-title="headerTitle" />
     <van-cell-group>
-      <van-field v-model="value" :label="label" :placeholder="'请输入'+ label" />
+      <van-field v-if="routerQueryType === 'name'" v-model="value" :label="label" :placeholder="'请输入'+ label" maxlength="16" clearable />
+      <van-field v-else v-model="value" :label="label" :placeholder="'请输入'+ label" maxlength="50" clearable />
     </van-cell-group>
     <van-button round type="info" @click="save">保存</van-button>
   </div>

@@ -30,7 +30,8 @@ import {
   DatetimePicker,
   Uploader,
   ActionSheet,
-  NoticeBar
+  NoticeBar,
+  Image as VanImage
 } from 'vant'
 
 const CustomVant = {
@@ -67,6 +68,7 @@ const CustomVant = {
       .use(Uploader)
       .use(ActionSheet)
       .use(NoticeBar)
+      .use(VanImage)
   }
 }
 

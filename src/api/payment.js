@@ -16,3 +16,12 @@ export function weChatPay(data) {
     data
   })
 }
+
+// 微信H5支付
+export function weChatH5Pay(data) {
+  return request({
+    url: '/wechat/H5Pay',
+    method: 'post',
+    data
+  })
+}

@@ -151,3 +151,12 @@ export function getUserAccount(data) {
     data
   })
 }
+
+// 使用兑换码
+export function useRedeemCode(data) {
+  return request({
+    url: '/RedeemCodeManage/insertRedeemCodeServiceTime',
+    method: 'post',
+    data
+  })
+}

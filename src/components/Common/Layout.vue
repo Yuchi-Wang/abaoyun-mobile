@@ -1,7 +1,7 @@
 <template>
   <div class="app-wrapper">
     <router-view />
-    <van-tabbar ref="vantTabbar" route active-color="#000" inactive-color="#858585">
+    <van-tabbar v-if="tabbarShow === '1'" ref="vantTabbar" route active-color="#000" inactive-color="#858585">
       <van-tabbar-item
         v-for="item in tabbarList"
         :key="item.id"
@@ -50,8 +50,19 @@ export default {
         activeImg: require('@/assets/img/home/my_active.svg'),
         img: require('@/assets/img/home/my.svg')
       }
-    ]
-  })
+    ],
+    tabbarShow: '1'
+  }),
+  mounted() {
+    this.init()
+  },
+  methods: {
+    init() {
+      window.addEventListener('setItem', (e) => {
+        this.tabbarShow = e.newValue
+      })
+    }
+  }
 }
 </script>
 <style scoped lang="scss">
@@ -59,7 +70,8 @@ export default {
   padding-top: .3rem;
   padding-bottom: calc(10px + constant(safe-area-inset-bottom));
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  box-shadow: 0 .5rem 1rem 0 #b8b8b8;
+  box-shadow: 0 0 1rem 0 #b8b8b8;
+  bottom: 0;
 }
 .van-tabbar-item__icon img {
   width: 2rem;

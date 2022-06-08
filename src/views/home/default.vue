@@ -1,9 +1,16 @@
 <template>
   <div class="home-main">
-    <van-swipe :loop="false" class="main-page" :style="{'height': windowsHeight + 'px'}" vertical>
+    <van-swipe class="main-page" :show-indicators="!assistantShow" :loop="false" :touchable="!assistantShow" :style="{'height': windowsHeight + 'px'}" vertical>
       <van-swipe-item class="first-page">
         <div class="first-banner" :style="{backgroundImage: `url(${$imgUrl}${abaoDetail.imageUrl})`}">
-          <van-notice-bar v-if="noticeShow" left-icon="volume-o" background="rgba(0,0,0,.5)" color="#fff" :scrollable="false">
+          <h4>
+            <img src="../../assets/img/home/home-logo.svg">
+            阿宝云
+          </h4>
+          <div class="service-img">
+            <img src="../../assets/img/user/my/service.svg" @click="assistant">
+          </div>
+          <van-notice-bar v-if="noticeShow && !assistantShow" left-icon="volume-o" background="rgba(0,0,0,0)" color="#fff" :scrollable="false">
             <van-swipe
               vertical
               class="notice-swipe"
@@ -13,10 +20,6 @@
               <van-swipe-item v-for="item in noticeList" :key="item.id" @click="getNoticeDetail(item.notice_id)">{{ item.title }}</van-swipe-item>
             </van-swipe>
           </van-notice-bar>
-          <h4>
-            <img src="../../assets/img/home/home-logo.svg">
-            阿宝云
-          </h4>
           <h3>阿宝是什么?</h3>
           <p>阿宝是协助您进行股票交易的智能AI助手</p>
         </div>
@@ -25,11 +28,65 @@
             <img src="../../assets/img/home/root.svg">
             <van-button type="info" @click="consultUs">立即咨询</van-button>
           </div>
-          <h3 class="main-title">阿宝能做什么?</h3>
+          <h3 class="main-title">阿宝能做什么？</h3>
           <p>通过金融NLP技术、人脸识别、语音等技术</p>
           <p>摆脱传统的交易模式，在随意、流动的场景进行交易</p>
-          <van-button type="info" class="free-use" @click="getAbaoDetail">了解详情</van-button>
+          <van-button type="info" class="free-use" @click="getAbaoDetail" style="margin-top:2rem">了解详情</van-button>
+          <a href="https://beian.miit.gov.cn/" target="_blank" class="record">沪ICP备17050032号-3</a>
         </div>
+        <van-popup
+          id="assistant"
+          v-model="assistantShow"
+          round
+          position="bottom"
+          :style="{ height: '33rem'}"
+          :close-on-click-overlay="false"
+          :closeable="true"
+          class="assistant"
+          style="position: absolute"
+          @close="onClose"
+        >
+          <h4>智能助手</h4>
+          <div class="chat-content">
+            <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
+              <!-- 对方 -->
+              <div v-if="!item.mineMsg" class="word">
+                <img src="../../assets/img/user/my/service.svg">
+                <div class="info-content">
+                  <h4 v-if="index === 0" class="roll-question">
+                    <van-icon name="question" />
+                    猜你想问
+                    <span @click="getRollQuestion"><van-icon name="replay" />换一换</span>
+                  </h4>
+                  <div @click="getCommonQuestion" v-html="item.contactText" />
+                </div>
+              </div>
+              <!-- 我的 -->
+              <div v-else class="word-my">
+                <div class="info-content">{{ item.contactText }}</div>
+                <van-image
+                  round
+                  width="3.3rem"
+                  height="3.3rem"
+                  :src="avatarUrl ? avatarUrl : defaultAvatar"
+                  class="avatar"
+                />
+              </div>
+            </div>
+          </div>
+          <footer ref="footer">
+            <van-field
+              v-model="submitValue"
+              type="textarea"
+              autosize
+              rows="1"
+              clearable
+              maxlength="50"
+              @blur="inputBlur"
+            />
+            <van-button type="primary" :disabled="!submitValue.length">发送</van-button>
+          </footer>
+        </van-popup>
       </van-swipe-item>
       <van-swipe-item class="second-page">
         <div class="second-banner" :style="{backgroundImage: `url(${$imgUrl}${nlpDetail.imageUrl})`}">
@@ -48,12 +105,12 @@
               span="8"
               @click="getDetail(item.path)"
             >
-            <div>
-              <p>
-                <img :src="item.src">
-                {{ item.title }}
-              </p>
-            </div>
+              <div>
+                <p>
+                  <img :src="item.src">
+                  {{ item.title }}
+                </p>
+              </div>
             </van-col>
           </van-row>
         </div>
@@ -71,11 +128,12 @@
           </van-steps>
           <div class="button-area">
             <van-button type="info" class="free-use" @click="getNlpDetail">了解详情</van-button>
+            <a href="https://beian.miit.gov.cn/" target="_blank" class="record">沪ICP备17050032号-3</a>
           </div>
         </div>
       </van-swipe-item>
     </van-swipe>
-    <van-popup v-model="showPopup">
+    <van-popup v-model="showPopup" class="phone-popup">
       <h3>咨询电话</h3>
       <p>
         <van-icon name="phone" />
@@ -86,7 +144,10 @@
 </template>
 
 <script>
+import { getToken } from '@/utils/auth'
 import { getList } from '@/api/product'
+import { getUserInfo } from '@/api/user'
+import { getList as getHelpList, getRollQuestion } from '@/api/help'
 import { getList as getNoticeList } from '@/api/notice'
 export default {
   name: 'Home',
@@ -113,15 +174,142 @@ export default {
     abaoDetail: '',
     nlpDetail: '',
     noticeList: [],
-    noticeShow: false
+    noticeShow: false,
+    assistantShow: false,
+    submitValue: '',
+    chatContent: [],
+    commonQuestion: false,
+    baseUrl: '',
+    avatarUrl: '',
+    defaultAvatar: require('@/assets/img/user/my/user.svg'),
+    rollPageIndex: 1
   }),
   mounted() {
     this.getProductList()
     this.getNoticeList()
+    this.getHelperList()
+    this.init()
+    this.getKeyboardStatus()
+  },
+  beforeDestroy() {
+    this.onClose()
   },
   methods: {
+    init() {
+      const env = process.env.NODE_ENV
+      if (env === 'development' || env === 'test') {
+        this.baseUrl = 'http://210.5.7.219:8028/v1/uploading/ReadAndParseImages'
+      } else {
+        this.baseUrl = 'http://120.55.164.177/v1/uploading/ReadAndParseImages'
+      }
+      this.getPersonal()
+    },
+    getKeyboardStatus() {
+      const u = navigator.userAgent
+      const isAndroid = u.indexOf('Android') > -1 || u.indexOf('Adr') > -1
+      if (isAndroid) {
+        const originalHeight = document.documentElement.clientHeight || document.body.clientHeight
+        window.onresize = function() {
+          const resizeHeight = document.documentElement.clientHeight || document.body.clientHeight
+          if (resizeHeight < originalHeight) {
+            //  当软键盘弹起，在此处操作
+            document.getElementById('assistant').style.bottom = '20rem'
+          } else {
+            // 当软键盘收起，在此处操作
+            document.getElementById('assistant').style.bottom = '0'
+          }
+        }
+      }
+    },
+    getPersonal() {
+      const token = getToken()
+      if (token) {
+        const params = {
+          user_code: localStorage.getItem('userCode')
+        }
+        getUserInfo(params).then(response => {
+          if (response.data.data.head_photo !== '' && response.data.data.head_photo) {
+            this.avatarUrl = `${this.baseUrl}${response.data.data.head_photo}`
+          }
+        })
+      }
+    },
     consultUs() {
       this.showPopup = true
+    },
+    inputBlur() {
+      if (this.submitValue !== '') {
+        this.submit()
+      }
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const container = this.$el.querySelector('.chat-content')
+        container.scrollTop = container.scrollHeight
+      })
+    },
+    getCommonQuestion(e) {
+      if (this.commonQuestion && e.target.localName === 'li') {
+        this.submitValue = e.target.innerText
+        this.submit()
+      }
+    },
+    getRollQuestion() {
+      const params = {
+        pageIndex: this.rollPageIndex,
+        pageSize: 6,
+        use: 2
+      }
+      getRollQuestion(params).then(res => {
+        const result = res.data.data
+        res.data.pageNum * res.data.pageSize < res.data.total ? this.rollPageIndex++ : this.rollPageIndex = 1
+        this.chatContent[0].contactText = result[0].answer || result
+      })
+    },
+    getHelperList() {
+      this.assistantShow = false
+      const params = {
+        pageIndex: 1,
+        pageSize: 6,
+        type: 2,
+        use: 2
+      }
+      getHelpList(params).then(res => {
+        this.commonQuestion = true
+        const result = res.data.data
+        this.chatContent.push({
+          mineMsg: false,
+          contactText: result[0].answer || result
+        })
+      })
+    },
+    submit() {
+      const subContent = this.submitValue.trim()
+      this.chatContent.push({
+        mineMsg: true,
+        contactText: subContent
+      })
+      this.submitValue = ''
+      this.scrollToBottom()
+      const params = {
+        keyword: subContent,
+        use: 2
+      }
+      getHelpList(params).then(res => {
+        this.chatContent.push({
+          mineMsg: false,
+          contactText: res.data.data[0].answer || res.data.data
+        })
+        this.scrollToBottom()
+      })
+    },
+    assistant() {
+      this.assistantShow = true
+      this.$addStorageEvent(2, 'assistantShow', 0)
+    },
+    onClose() {
+      this.assistantShow = false
+      this.$addStorageEvent(2, 'assistantShow', 1)
     },
     getNoticeList() {
       const params = {
@@ -144,10 +332,10 @@ export default {
       getList(params).then(res => {
         const productList = res.data.data.list
         this.abaoDetail = productList.find(item => {
-          return item.product_name === '阿宝云'
+          return item.product_name === '诚龙阿宝'
         })
         this.nlpDetail = productList.find(item => {
-          return item.product_name === 'nlp'
+          return item.product_name === '金融NLP'
         })
       })
     },
@@ -180,7 +368,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .home-main {
-  .van-popup {
+  .phone-popup {
     width: 20rem;
     padding: .75rem;
     border-radius: .333rem;
@@ -218,6 +406,7 @@ export default {
   }
   .first-page {
     background: #fff;
+    position: relative;
     .main-title {
       text-align: center;
       margin: 0 0 2.1667rem;
@@ -254,10 +443,148 @@ export default {
         color: #fff;
         font-weight: 400;
         font-size: 1.167rem;
-        margin-top: 2rem;
-        margin-bottom: 2rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
         img {
           vertical-align: text-top;
+        }
+      }
+      .service-img {
+        position: absolute;
+        top: 1.2rem;
+        right: 1rem;
+        img {
+          width: 3.5rem;
+        }
+      }
+    }
+    .assistant {
+      overflow: hidden;
+      z-index: 99999;
+      position: relative;
+      background: #fff!important;
+      h4 {
+        margin-top: 1.17rem;
+        text-align: center;
+        height: 1.67rem;
+        line-height: 1.67rem;
+        font-size: 1.17rem;
+        font-weight: 600;
+        color: #171717;
+      }
+      > div {
+        padding: 1.25rem 1.25rem 0 1.25rem;
+        height: 23rem;
+        overflow: auto;
+      }
+      footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 1rem;
+        box-sizing: border-box;
+        background: #e8e8e8;
+        z-index: 9999;
+        .van-cell {
+          width: 80%;
+        }
+        .van-field {
+          border-radius: .4rem;
+        }
+        .van-button {
+          width: 5rem;
+          height: 3.5rem;
+          position: absolute;
+          right: 1rem;
+          bottom: 1rem;
+          border-radius: .4rem;
+          background: #324BE3;
+          border-color: #324BE3;
+        }
+      }
+      .word {
+        display: flex;
+        margin-bottom: .583rem;
+        img {
+          width: 3.3rem;
+          height: 3.3rem;
+          border-radius: 50%;
+        }
+        .info-content {
+          position: relative;
+          max-width: 68%;
+          margin-top: .667rem;
+          margin-left: .833rem;
+          padding: .833rem;
+          background: #FFFFFF;
+          box-shadow: 0rem 0rem 1.17rem 0rem rgba(207, 207, 207, 0.5);
+          border-radius: .333rem;
+          line-height: 1.667rem;
+          font-size: 1.167rem;
+          white-space:  pre-wrap;
+          &:before {
+            position: absolute;
+            left: -.667rem;
+            top: .667rem;
+            content: '';
+            border-right: .833rem solid #FFFFFF;
+            box-shadow: 0rem 0rem 1.17rem 0rem rgba(207, 207, 207, 0.5);
+            border-top: .667rem solid transparent;
+            border-bottom: .667rem solid transparent;
+          }
+          .roll-question {
+            position: relative;
+            color: #324BE3;
+            margin: 0;
+            text-align: left;
+            height: 1.333rem;
+            margin-bottom: .3rem;
+            .van-icon {
+              font-size: 1.333rem;
+              vertical-align: text-bottom;
+            }
+            span {
+              position: absolute;
+              right: 0;
+              font-size: 1rem;
+              color: #999;
+              .van-icon {
+                font-size: 1rem;
+                vertical-align: middle;
+              }
+            }
+          }
+        }
+      }
+      .word-my {
+        display: flex;
+        justify-content:flex-end;
+        margin-bottom: .583rem;
+        img{
+          width: 3.3rem;
+          height: 3.3rem;
+          border-radius: 50%;
+        }
+        .info-content {
+          position: relative;
+          max-width: 68%;
+          padding: .833rem;
+          margin: .667rem .833rem 0 0;
+          background: #324BE3;
+          color: #fff;
+          line-height: 1.667rem;
+          font-size: 1.167rem;
+          border-radius: .333rem;
+          &:after {
+            position: absolute;
+            right: -.667rem;
+            top: .667rem;
+            content: '';
+            border-left: .833rem solid #324BE3;
+            border-top: .667rem solid transparent;
+            border-bottom: .667rem solid transparent;
+          }
         }
       }
     }
@@ -372,6 +699,7 @@ export default {
         border-color: #324BE3;
         border-radius: 1.25rem;
         font-size: 1rem;
+        margin-top: 1rem;
       }
       .doc {
         width: 9rem;
@@ -381,6 +709,13 @@ export default {
         border-radius: 1.25rem;
         color: #324BE3;
         font-size: 1rem;
+      }
+      .record {
+        color: #555;
+        position: absolute;
+        margin-top: 4.5rem;
+        left: 50%;
+        transform: translateX(-50%);
       }
     }
   }
@@ -429,11 +764,18 @@ export default {
       font-size: 1.083rem;
     }
   }
+  .record {
+    color: #555;
+    position: absolute;
+    margin-top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .van-notice-bar {
   position: absolute;
-  top: 0;
+  // top: 0;
   left: 0;
   right: 0;
   height: 2rem;

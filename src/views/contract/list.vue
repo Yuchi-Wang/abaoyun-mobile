@@ -58,7 +58,8 @@ const contractStatusMap = {
   '0': '申请成功',
   '1': '未通过',
   '2': '已撤销',
-  '3': '申请中'
+  '3': '申请中',
+  '4': '已作废'
 }
 export default {
   name: 'ContractList',

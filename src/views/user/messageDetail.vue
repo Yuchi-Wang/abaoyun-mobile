@@ -34,7 +34,9 @@ export default {
       const params = { information_id: this.detailId }
       getDetail(params).then(res => {
         this.message = res.data.data
-        this.hasReadInfo()
+        if (this.message.has_read && this.message.has_read === '0') {
+          this.hasReadInfo()
+        }
       })
     },
     hasReadInfo() {

@@ -51,7 +51,8 @@ const invoiceStatusMap = {
   '1': '已申请',
   '2': '申请成功',
   '3': '已撤销',
-  '4': '申请失败'
+  '4': '申请失败',
+  '5': '已作废'
 }
 export default {
   name: 'InvoiceList',

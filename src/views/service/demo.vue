@@ -5,20 +5,20 @@
     <div ref="chatContent" class="chat-content">
       <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
         <div>
-            <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
+          <div v-for="(item, index) in chatContent" :key="index" class="chat-item">
             <!-- 对方 -->
             <div v-if="!item.mineMsg" class="word">
-                <img src="../../assets/img/user/my/system_avatar.png">
-                <div class="info-content" v-html="item.contactText" />
+              <img src="../../assets/img/user/my/system_avatar.png">
+              <div class="info-content" v-html="item.contactText" />
             </div>
             <!-- 我的 -->
             <div v-else class="word-my">
-                <div class="info-content">{{ item.contactText }}</div>
-                <img src="../../assets/img/user/my/user.svg">
+              <div class="info-content">{{ item.contactText }}</div>
+              <img src="../../assets/img/user/my/user.svg">
             </div>
-            </div>
+          </div>
         </div>
-      </van-pull-refresh>    
+      </van-pull-refresh>
     </div>
     <footer ref="footer">
       <van-field
@@ -66,7 +66,7 @@ export default {
     },
     onRefresh() {
       if (this.hasNextPage) {
-        this.pageIndex ++
+        this.pageIndex++
         this.getChatList()
       } else {
         this.isLoading = false
@@ -79,11 +79,11 @@ export default {
       })
     },
     getChatList() {
-        const params = {
-          pageIndex: this.pageIndex,
-          pageSize: this.pageSize,
-          user_code: localStorage.getItem('userCode')
-        }
+      const params = {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize,
+        user_code: localStorage.getItem('userCode')
+      }
       getChatList(params).then(res => {
         this.hasNextPage = res.data.data.hasNextPage
         res.data.data.list.map(item => {
@@ -97,8 +97,8 @@ export default {
           })
         })
       }).finally(() => {
-          this.isLoading = false
-          this.firstCome = false
+        this.isLoading = false
+        this.firstCome = false
       })
     },
     submit() {
@@ -110,8 +110,8 @@ export default {
       this.scrollToBottom()
       this.value = ''
       const params = {
-       fromusername: localStorage.getItem('userCode'),
-       content: subContent
+        fromusername: localStorage.getItem('userCode'),
+        content: subContent
       }
       getChatDialogue(params).then(res => {
         const result = res.data.data

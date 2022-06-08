@@ -13,15 +13,17 @@
           :key="item.id"
           :name="index"
           :before-close="beforeClose"
-          @click="getDetail(item.product_id)"
         >
           <div class="list">
             <van-row>
-              <van-col span="18">
+              <van-col span="12">
                 <h4 class="service-title">{{ item.name }}</h4>
               </van-col>
               <van-col span="6" style="text-align: right">
-                <van-button type="info" @click.stop="useService">使用</van-button>
+                <van-button type="primary" @click="useService" class="use-button">使用</van-button>
+              </van-col>
+              <van-col span="6" style="text-align: center">
+                <van-button type="info" @click="getDetail(item.product_id)">详情</van-button>
               </van-col>
             </van-row>
           </div>
@@ -175,6 +177,10 @@ export default {
     background: linear-gradient(220deg, #183FEE 0%, #3C51FF 100%);
     border-color: #183FEE;
     border-radius: 1rem;
+  }
+  .use-button {
+    background: #07C160;
+    border-color: #07C160;
   }
 }
 </style>

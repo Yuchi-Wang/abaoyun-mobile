@@ -23,7 +23,8 @@
       </van-cell>
     </van-cell-group>
     <van-button v-if="invoiceDetail.status === '1'" class="cancle-apply" @click="cancleInvoice">撤销申请</van-button>
-    <van-button v-if="invoiceDetail.status === '1' || invoiceDetail.status === '4'" class="edit-detail" type="info" @click="editInvoice">修改申请</van-button>
+    <van-button v-if="invoiceDetail.status === '1'" class="edit-detail" type="info" @click="editInvoice">修改申请</van-button>
+    <van-button v-if="invoiceDetail.status === '4'" class="edit-detail" type="info" @click="applyInvoice">重新申请</van-button>
   </div>
 </template>
 
@@ -34,7 +35,8 @@ const invoiceStatusMap = {
   '1': '已申请',
   '2': '申请成功',
   '3': '已撤销',
-  '4': '申请失败'
+  '4': '申请失败',
+  '5': '已作废'
 }
 export default {
   name: 'InvoiceDetail',
@@ -69,14 +71,32 @@ export default {
         }
       })
     },
+    applyInvoice() {
+      this.$router.replace({
+        name: 'applyInvoice',
+        query: {
+          orderId: this.invoiceDetail.order_number,
+          invoiceId: this.invoiceDetail.id,
+          type: 'again-apply'
+        }
+      })
+    },
     cancleInvoice() {
       Dialog.confirm({
         message: '确认取消申请该该发票吗'
       }).then(() => {
-        this.invoiceDetail.status = '3'
-        updateInvoice(this.invoiceDetail).then(res => {
-          Toast(res.data.msg)
-          this.$router.replace('/invoice-list')
+        const params = JSON.parse(JSON.stringify(this.invoiceDetail))
+        params.status = '3'
+        updateInvoice(params).then(res => {
+          if (res.data.code === 200) {
+            this.invoiceDetail.status = '3'
+            Toast(res.data.msg)
+            this.$router.replace('/invoice-list')
+          } else {
+            this.getDetail()
+          }
+        }).catch(() => {
+          this.getDetail()
         })
       }).catch(() => {
         // on cancel

@@ -4,41 +4,50 @@
       <i class="turn-back-icon" @click="turnBack" />
       <van-field v-model="value" maxlength="25" placeholder="请输入订单号" />
     </div>
-    <van-pull-refresh v-if="orderList.length" v-model="isRefreshLoading" @refresh="onRefresh" style="min-height: 100vh;">
-      <van-list
-        v-model="listLoading"
-        :finished="listFinished"
-        finished-text="没有更多了"
-        @load="onLoad"
-      >
-        <van-swipe-cell
-          v-for="(item, index) in orderList"
-          :key="item.id"
-          :name="index"
-          :before-close="beforeClose"
-        >
-          <div class="list" @click="getDetail(item.order_number)">
-            <van-row gutter="10">
-              <van-col span="17">
-                <p class="order-no">订单号：{{ item.order_number }}</p>
-                <h4 class="name">{{ item.product_name }}</h4>
-                <p class="people">
-                  <span>支付人</span>
-                  {{ item.payPeople }}
-                </p>
-              </van-col>
-              <van-col span="7">
-                <p class="order-price">订单金额（元）</p>
-                <h4 class="price">{{ item.payment_amount }}</h4>
-              </van-col>
-            </van-row>
-          </div>
-          <template #right>
-            <van-button square text="删除" type="danger" class="delete-button" />
-          </template>
-        </van-swipe-cell>
-      </van-list>
-    </van-pull-refresh>
+    <van-tabs
+      v-model="active"
+      color="#324BE3"
+      title-active-color="#324BE3"
+      @click="selectOrderStatus"
+    >
+      <van-tab v-for="tabItem in orderStatusList" :key="tabItem.value" :title="tabItem.label">
+        <van-pull-refresh v-if="orderList.length" v-model="isRefreshLoading" style="min-height: 100vh;" @refresh="onRefresh">
+          <van-list
+            v-model="listLoading"
+            :finished="listFinished"
+            finished-text="没有更多了"
+            @load="onLoad"
+          >
+            <van-swipe-cell
+              v-for="(item, index) in orderList"
+              :key="item.id"
+              :name="index"
+              :before-close="beforeClose"
+            >
+              <div class="list" @click="getDetail(item.order_number, item.failuretime)">
+                <van-row gutter="10">
+                  <van-col span="17">
+                    <p class="order-no">订单号：{{ item.order_number }}</p>
+                    <h4 class="name">{{ item.product_name }}</h4>
+                    <p class="people">
+                      <span>支付人</span>
+                      {{ item.payPeople }}
+                    </p>
+                  </van-col>
+                  <van-col span="7">
+                    <p class="order-price">订单金额（元）</p>
+                    <h4 class="price">{{ item.payment_amount }}</h4>
+                  </van-col>
+                </van-row>
+              </div>
+              <template #right>
+                <van-button square text="删除" type="danger" class="delete-button" />
+              </template>
+            </van-swipe-cell>
+          </van-list>
+        </van-pull-refresh>
+      </van-tab>
+    </van-tabs>
     <van-empty v-if="emptyShow" description="暂无相关订单信息" />
   </div>
 </template>
@@ -58,7 +67,27 @@ export default {
     hasNextPage: false,
     pageIndex: 1,
     pageSize: 8,
-    emptyShow: false
+    emptyShow: false,
+    active: 0,
+    orderStatusList: [
+      {
+        value: '',
+        label: '全部'
+      },
+      {
+        value: '1',
+        label: '已付款'
+      },
+      {
+        value: '2',
+        label: '未付款'
+      },
+      {
+        value: '3',
+        label: '已取消'
+      }
+    ],
+    orderStatus: ''
   }),
   watch: {
     value() {
@@ -78,12 +107,18 @@ export default {
         this.$router.back()
       }
     },
+    selectOrderStatus(index) {
+      index === 0 ? this.orderStatus = '' : this.orderStatus = index + ''
+      this.orderList = []
+      this.getOrderList()
+    },
     getOrderList() {
       const params = {
         pageIndex: this.pageIndex,
         user_code: localStorage.getItem('userCode'),
         pageSize: this.pageSize,
-        order_number: this.value
+        order_number: this.value,
+        order_status: this.orderStatus
       }
       getList(params).then(res => {
         this.isReflash = true
@@ -119,11 +154,12 @@ export default {
         }
       }
     },
-    getDetail(index) {
+    getDetail(orderNum, failuretime) {
       this.$router.push({
         name: 'orderDetail',
         query: {
-          id: index
+          id: orderNum,
+          failuretime: failuretime
         }
       })
     },

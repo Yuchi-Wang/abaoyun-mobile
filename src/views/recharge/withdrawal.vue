@@ -11,9 +11,37 @@
     <div class="main">
       <h4 style="margin-bottom: 1rem">录入首款信息</h4>
       <van-cell-group :border="false">
-        <van-field v-model="cardNumber" type="digit" label="收款银行卡号" :border="false" placeholder="请输入收款银行卡号" maxlength="20" />
-        <van-field v-model="money" type="digit" label="提现金额" :border="false" placeholder="请输入提现金额" maxlength="20" />
-        <van-field v-model="name" label="姓名" placeholder="请输入该卡号绑定的姓名" :border="false" maxlength="10" />
+        <van-field
+          v-model="cardNumber"
+          type="digit"
+          label="收款银行卡号"
+          :border="false"
+          placeholder="请输入收款银行卡号"
+          maxlength="20"
+          clearable
+        />
+        <ul class="card-list" v-if="cardShow">
+          <li v-for="item in cardList" :key="item.id" @click="selectCard(item.credit_card)">{{ item.credit_card }}</li>
+        </ul>
+        <van-field
+          v-model="money"
+          type="digit"
+          label="提现金额"
+          :border="false"
+          placeholder="请输入提现金额"
+          maxlength="9"
+          clearable
+          @focus="clearCardNum"
+        />
+        <van-field
+          v-model="name"
+          label="姓名"
+          placeholder="请输入该卡号绑定的姓名"
+          :border="false"
+          maxlength="10"
+          clearable
+          @focus="clearCardNum"
+        />
       </van-cell-group>
       <van-button type="primary" @click="submit">提现</van-button>
     </div>
@@ -22,22 +50,62 @@
 
 <script>
 import { Toast } from 'vant'
-import { createCheck } from '@/api/check'
+import { createCheck, getBankCardNumList } from '@/api/check'
 export default {
   name: 'RechargeWithdrawal',
   data: () => ({
     headerTitle: '提现',
     cardNumber: '',
     name: '',
-    money: ''
+    money: '',
+    cardList: [],
+    cardShow: false
   }),
+  watch: {
+    cardNumber(value) {
+      this.getBankCardNumList(value)
+    }
+  },
   methods: {
+    clearCardNum() {
+      this.cardList = []
+      this.cardShow = false
+    },
+    getBankCardNumList(num) {
+      if (!num.length) {
+        this.clearCardNum()
+      } else {
+        const params = {
+          credit_card: num,
+          user_code: localStorage.getItem('userCode')
+        }
+        getBankCardNumList(params).then(res => {
+          const result = res.data.data
+          if (result.list && result.list.length) {
+            if (num === result.list[0].credit_card) {
+              this.clearCardNum()
+            } else {
+              this.cardList = result.list
+              this.cardShow = true
+            }
+          } else {
+            this.clearCardNum()
+          }
+        })
+      }
+    },
+    selectCard(num) {
+      this.cardNumber = num
+      this.clearCardNum()
+    },
     submit() {
       if (!this.cardNumber.length) {
         Toast('请输入收款银行卡号')
+      } else if (this.cardNumber.length < 16) {
+        Toast('收款银行卡号长度不对')
       } else if (!this.name.length) {
         Toast('请输入姓名')
-      } else if (!this.money.length || this.money === '0') {
+      } else if (!this.money.length || Number(this.money) === 0) {
         Toast('请输入不为0的提现金额')
       } else {
         const params = {
@@ -68,6 +136,25 @@ export default {
   border-radius: .667rem;
   margin: .833rem;
   padding: 1.167rem 1.25rem 1.5rem 2.083rem;
+  position: relative;
+  .card-list {
+    position: absolute;
+    left: 9rem;
+    z-index: 999;
+    background: #fff;
+    width: calc(100% - 13rem);
+    border: 1px solid #ebedf0;
+    border-top: none;
+    li {
+      padding: .2rem;
+      height: 1.677rem;
+      line-height: 1.677rem;
+      font-size: 1.167rem;
+      &:hover {
+        background: #F5F5F6;
+      }
+    }
+  }
   h4 {
     height: 1.667rem;
     font-size: 1.167rem;

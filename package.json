@@ -21,6 +21,8 @@
     "vant": "^2.12.1",
     "vue": "^2.6.11",
     "vue-clipboard2": "^0.3.1",
+    "vue-cropper": "^0.5.8",
+    "vue-cropperjs": "^5.0.0",
     "vue-router": "^3.2.0"
   },
   "devDependencies": {

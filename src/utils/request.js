@@ -34,14 +34,15 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
-    if (res.code === 200) {
+    if (res.code === 200 || (res.code === 506 && res.msg !== '账号不存在')) {
       return Promise.resolve(response)
-    } else if (res.code === 500 || res.code === 502) {
+    } else if ((res.code === 500 && res.msg !== '金额不足，请及时充值') || res.code === 502) {
       Toast(res.msg)
       return Promise.reject(res)
     } else {
-      if (res.type !== 'application/excel') {
+      if (res.type !== 'application/excel' && res.msg !== '金额不足，请及时充值') {
         Toast(res.msg)
+        return Promise.reject(res)
       }
       return response
     }
@@ -52,7 +53,7 @@ service.interceptors.response.use(
       if (errorResponse.status === 401) {
         Dialog.alert({
           title: '提示',
-          message: '请登录'
+          message: '您好，请先请登录'
         }).then(() => {
           router.replace({
             path: '/login',

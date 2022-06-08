@@ -11,7 +11,7 @@
       <van-cell v-if="contractDetail.createtime" title="申请时间" :border="false" :value="contractDetail.createtime.substring(0, contractDetail.createtime.length - 5)" />
       <van-cell v-if="contractDetail.expirationdate" title="合同有效期" :border="false" :value="contractDetail.expirationdate" />
       <van-cell v-if="contractDetail.express_number && contractDetail.status !== '3'" title="回寄物流单号" :border="false" :value="contractDetail.express_number" />
-      <van-field
+      <!-- <van-field
         v-if="contractDetail.status === '3'"
         v-model="contractDetail.express_number"
         center
@@ -23,7 +23,7 @@
         <template #button>
           <van-button size="small" type="info" @click="submit">确认</van-button>
         </template>
-      </van-field>
+      </van-field> -->
     </van-cell-group>
     <van-button v-if="contractDetail.status === '0'" class="cancle-apply preview" @click="handleDownLoad">下载合同</van-button>
     <van-button v-if="contractDetail.status === '3'" class="cancle-apply" @click="cancleContract">撤销申请</van-button>
@@ -33,12 +33,13 @@
 
 <script>
 import { Dialog, Toast } from 'vant'
-import { getDetail, updateContract } from '@/api/contract'
+import { getDetail, updateContract, createContract } from '@/api/contract'
 const contractStatusMap = {
   '0': '申请成功',
   '1': '申请失败',
   '2': '已撤销',
-  '3': '申请中'
+  '3': '申请中',
+  '4': '已作废'
 }
 export default {
   name: 'ContractDetail',
@@ -64,21 +65,22 @@ export default {
         this.contractDetail = res.data.data
       })
     },
-    submit() {
-      updateContract(this.contractDetail).then(res => {
-        if (res.data.code === 200) {
-          Toast('回寄合同物流单号填写成功')
-        }
-      })
-    },
     createContract() {
       Dialog.confirm({
         message: '确认再次申请该该合同吗'
       }).then(() => {
-        this.contractDetail.status = '3'
+        this.contractDetail.status = '4'
+        const params = {
+          contract_name: this.contractDetail.contract_name,
+          order_number: this.contractDetail.order_number,
+          status: '3',
+          user_code: this.contractDetail.user_code
+        }
         updateContract(this.contractDetail).then(res => {
-          Toast(res.data.msg)
-          this.$router.replace('/contract-list')
+          createContract(params).then(response => {
+            Toast(response.data.msg)
+            this.$router.replace('/contract-list')
+          })
         })
       }).catch(() => {
         // on cancel
@@ -88,10 +90,18 @@ export default {
       Dialog.confirm({
         message: '确认取消申请该该合同吗'
       }).then(() => {
-        this.contractDetail.status = '2'
-        updateContract(this.contractDetail).then(res => {
-          Toast(res.data.msg)
-          this.$router.replace('/contract-list')
+        const params = JSON.parse(JSON.stringify(this.contractDetail))
+        params.status = '2'
+        updateContract(params).then(res => {
+          if (res.data.code === 200) {
+            this.contractDetail.status = '2'
+            Toast(res.data.msg)
+            this.$router.replace('/contract-list')
+          } else {
+           this.getDetail()
+          }
+        }).catch(() => {
+          this.getDetail()
         })
       }).catch(() => {
         // on cancel

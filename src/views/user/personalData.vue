@@ -2,6 +2,7 @@
   <div class="main">
     <baseHeader :header-title="headerTitle" />
     <van-cell-group v-if="userDetail">
+      <uploadAvatar :avatar-url="avatarUrl" @refresh="refreshData" />
       <van-cell title="昵称" :label="nickname" :border="false" is-link @click="editData('name')" />
       <van-cell title="邮箱" :label="email" :value="email ? '已绑定' : ''" :border="false" is-link @click="bindEmail" />
       <van-cell title="手机号" :label="mobile" :value="mobile ? '已绑定' : ''" :border="false" is-link @click="changeBinding" />
@@ -27,10 +28,14 @@
 
 <script>
 import { Dialog, Toast } from 'vant'
+import uploadAvatar from '@/components/UploadAvatar'
 import { getUserInfo, cancelAccount, editUserInfo } from '@/api/user'
 export default {
   name: 'PersonalData',
+  components: { uploadAvatar },
   data: () => ({
+    defaultAvatar: require('@/assets/img/user/my/user.svg'),
+    avatarUrl: '',
     headerTitle: '个人资料',
     email: '',
     name: '',
@@ -52,23 +57,34 @@ export default {
         name: '企业',
         subname: '充值与开票将展示公司信息'
       }
-    ]
+    ],
+    baseUrl: ''
   }),
   mounted() {
     this.getPersonal()
+    this.init()
   },
   methods: {
+    init() {
+      const env = process.env.NODE_ENV
+      if (env === 'development' || env === 'test') {
+        this.baseUrl = 'http://210.5.7.219:8028/v1/uploading/ReadAndParseImages'
+      } else {
+        this.baseUrl = 'http://120.55.164.177/v1/uploading/ReadAndParseImages'
+      }
+    },
+    refreshData() {
+      this.getPersonal()
+    },
     cancelAccount() {
       Dialog.confirm({
         title: '确认注销账户 ？',
         message: '删除您的阿宝云账户，用户数据将无法恢复'
       }).then(() => {
         cancelAccount(localStorage.getItem('userCode')).then(res => {
-          if (res.code === 200) {
-            Toast('注销成功')
-            localStorage.clear()
-            this.$router.replace('/')
-          }
+          Toast('注销成功')
+          localStorage.clear()
+          this.$router.replace('/')
         })
       }).catch(() => {
         // on cancel
@@ -119,6 +135,11 @@ export default {
         this.nickname = this.userDetail.nickname
         this.isHasPassword = !!this.userDetail.user_password
         this.isHasPaymentPassword = !!this.userDetail.payment_code
+        if (response.data.data.head_photo !== '' && response.data.data.head_photo) {
+          this.avatarUrl = `${this.baseUrl}${response.data.data.head_photo}`
+        } else {
+          this.avatarUrl = this.defaultAvatar
+        }
       })
     },
     editData(name) {

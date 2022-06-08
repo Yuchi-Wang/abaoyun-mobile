@@ -3,8 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0,viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no,viewport-fit=cover" />
     <meta name="format-detection" content="telephone=no">
+    <meta name="keywords" content="阿宝云,金融NLP,阿宝订阅平台,金融服务,股票交易">
+    <meta name="description" content="阿宝能做什么？通过金融NLP技术、人脸识别、语音等技术,摆脱传统的交易模式，在随意、流动的场景进行交易" />
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title>阿宝云</title>
   </head>
@@ -16,6 +18,9 @@
 <script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
 <script>
   sessionStorage.setItem('ip', returnCitySN.cip)
+</script>
+<script>
+  sessionStorage.setItem('isIosMoveBack', 0)
 </script>
 <script>
 // 动态计算rem大小，已宽度375为基准，1rem为12px

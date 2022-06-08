@@ -1,1 +1,17 @@
-<svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><g id="页面1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="我的" transform="translate(-25 -48)"><g id="用户" transform="translate(25 48)"><circle id="椭圆形" fill="#E1E1E1" cx="25" cy="25" r="25"/><path d="M24.5 46c7.348 0 13.306-3.346 13.306-10.694C37.806 27.957 31.848 22 24.5 22c-7.348 0-13.306 5.957-13.306 13.306C11.194 42.654 17.152 46 24.5 46z" id="椭圆形" stroke="#CFCFCF" stroke-width="2" fill="#FFF"/><path d="M25 38.909c11.598 0 21-1.311 21-12.909S36.598 5 25 5 4 14.402 4 26s9.402 12.909 21 12.909z" id="椭圆形" stroke="#CFCFCF" stroke-width="2" fill="#FFF"/><ellipse id="椭圆形" fill="#BEBEBE" cx="26" cy="34.75" rx="2" ry="1"/><rect id="矩形" fill="#525353" x="10" y="17" width="30" height="12" rx="3"/><circle id="椭圆形" fill="#6F77FF" cx="17.5" cy="23.5" r="3.5"/><circle id="椭圆形备份" fill="#6F77FF" cx="33.5" cy="23.5" r="3.5"/></g></g></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="0 0 50 50" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>用户</title>
+    <g id="充值" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="我的备份-2" transform="translate(-25.000000, -48.000000)">
+            <g id="编组" transform="translate(25.000000, 48.000000)">
+                <circle id="椭圆形" fill="#E1E1E1" cx="25" cy="25" r="25"></circle>
+                <path d="M24.5,46 C31.8484671,46 37.8055767,42.6540438 37.8055767,35.3055767 C37.8055767,27.9571096 31.8484671,22 24.5,22 C17.1515329,22 11.1944233,27.9571096 11.1944233,35.3055767 C11.1944233,42.6540438 17.1515329,46 24.5,46 Z" id="椭圆形" stroke="#CFCFCF" stroke-width="2" fill="#FFFFFF"></path>
+                <path d="M25,38.9085975 C36.5979797,38.9085975 46,37.5979797 46,26 C46,14.4020203 36.5979797,5 25,5 C13.4020203,5 4,14.4020203 4,26 C4,37.5979797 13.4020203,38.9085975 25,38.9085975 Z" id="椭圆形" stroke="#CFCFCF" stroke-width="2" fill="#FFFFFF"></path>
+                <ellipse id="椭圆形" fill="#BEBEBE" cx="26" cy="34.75" rx="2" ry="1"></ellipse>
+                <rect id="矩形" fill="#525353" x="10" y="17" width="30" height="12" rx="3"></rect>
+                <circle id="椭圆形" fill="#6F77FF" cx="17.5" cy="23.5" r="3.5"></circle>
+                <circle id="椭圆形备份" fill="#6F77FF" cx="33.5" cy="23.5" r="3.5"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

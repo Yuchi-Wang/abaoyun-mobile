@@ -14,7 +14,7 @@
         阿宝利用语音识别、语音合成、NLP语义解析、声纹认证、人脸识别等AI技术，让阿宝实现“能听、会说、懂你”式的证券投资交易平台。
       </p>
     </div>
-    <div class="experience">
+    <!-- <div class="experience">
       <div>
         <h3>
           <span class="san" />
@@ -23,11 +23,11 @@
         </h3>
         <img src="../../assets/img/product/abao-experience.svg" @click="handleExperience">
       </div>
-    </div>
-    <div class="case">
+    </div> -->
+    <div class="experience">
       <h3>
         <span class="san" />
-        <span class="part-title">PART03</span><br>
+        <span class="part-title">PART02</span><br>
         <span class="main-title">产品案例</span>
       </h3>
       <img src="../../assets/img/product/abo-detail-1.svg" alt="">
@@ -37,7 +37,7 @@
     <div class="advantage">
       <h3>
         <span class="san" />
-        <span class="part-title">PART04</span><br>
+        <span class="part-title">PART03</span><br>
         <span class="main-title">产品优势</span>
       </h3>
       <ul>
@@ -54,7 +54,7 @@
       <div class="scene-banner">
         <h3>
           <span class="san" />
-          <span class="part-title">PART05</span><br>
+          <span class="part-title">PART04</span><br>
           <span class="main-title">应用场景</span>
         </h3>
         <h4>智能语音交互</h4>
@@ -70,12 +70,12 @@
     <div class="price">
       <h3>
         <span class="san" />
-        <span class="part-title">PART06</span><br>
+        <span class="part-title">PART05</span><br>
         <span class="main-title">产品定价</span>
       </h3>
       <van-row>
-        <van-col v-for="item in packgeList" :key="item.id" span="8">
-          <div class="price-list-bg">
+        <van-col v-for="(item, index) in packgeList" :key="item.id" span="8">
+          <div class="price-list-bg" @click="getPirce(index)">
             <span class="price-type">{{ item.name }}</span>
             <h4>服务量 </h4>
             <p class="times">{{ item.times }}次</p>
@@ -87,7 +87,7 @@
     <div class="resources">
       <h3>
         <span class="san" />
-        <span class="part-title">PART07</span><br>
+        <span class="part-title">PART06</span><br>
         <span class="main-title">相关资源</span>
       </h3>
       <van-button round @click="getAbaoDoc">技术文档</van-button>
@@ -104,21 +104,24 @@
         </van-col>
       </van-row>
       <p v-if="isDisable" class="disable-tip">您已申请过免费试用</p>
-      <van-button class="purchase-button" type="info" @click="purchase" :disabled="isDisable">购买</van-button>
+      <van-button class="purchase-button" type="info" :disabled="isDisable" @click="purchase">购买</van-button>
     </van-popup>
     <!-- 选择付款方式 -->
     <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
-      <van-field v-model="paymentPwd" type="password" label="支付密码：" maxlength="16" class="pwd-input" placeholder="请输入当前支付密码" />
-      <p class="fotgot-or-set-pwd">
-        <span v-if="isHasPaymentPwd" @click="forgotPwd" style="text-align: right">忘记密码？</span>
+      <van-field v-if="!paymentIndex" v-model="paymentPwd" type="password" label="支付密码：" maxlength="16" class="pwd-input" placeholder="请输入当前支付密码" />
+      <p v-if="!paymentIndex" class="fotgot-or-set-pwd">
+        <span v-if="isHasPaymentPwd" style="text-align: right" @click="forgotPwd">忘记密码？</span>
         <span v-else style="text-align: left">当前账户未设置支付密码，<i @click="setPaymentPwd">请点击设置</i></span>
       </p>
       <van-row gutter="10">
         <van-col span="6">
           <h4 style="line-height:2.5rem">付款方式：</h4>
         </van-col>
-        <van-col span="8">
+        <van-col v-if="activeIndex === 0" span="8">
           <van-button class="active">账户余额</van-button>
+        </van-col>
+        <van-col v-else span="8" v-for="(item, index) in paymentList" :key="item.id">
+          <van-button :class="{ active: index === paymentIndex }" @click="selectPay(index)">{{ item.paymentWay }}</van-button>
         </van-col>
       </van-row>
       <van-checkbox v-model="checked" icon-size="1.147rem" class="policy">
@@ -148,10 +151,11 @@
 </template>
 
 <script>
-import { Toast } from 'vant'
+import { Dialog, Toast } from 'vant'
 import { getToken } from '@/utils/auth'
 import { getUserInfo } from '@/api/user'
 import { createOrder } from '@/api/order'
+import { weChatH5Pay } from '@/api/payment'
 import { getDetail, getPackagesList } from '@/api/product'
 export default {
   name: 'AbaoDetail',
@@ -187,6 +191,17 @@ export default {
       }
     ],
     packgeList: [],
+    paymentList: [
+      {
+        id: 1,
+        paymentWay: '账户余额'
+      },
+      {
+        id: 2,
+        paymentWay: '微信支付'
+      }
+    ],
+    paymentIndex: 0,
     activeIndex: 1,
     submitShow: false,
     resultShow: false,
@@ -211,13 +226,46 @@ export default {
       }
     }
   },
+  activated() {
+    if (this.$fromUrl.name === 'applyContract' || this.$fromUrl.name === 'rechargeResult') {
+      const orderParams = JSON.parse(localStorage.getItem('orderParams'))
+      this.productDetail.price = orderParams.price
+      this.totalPrice = orderParams.totalPrice
+      this.submitBarPrice = orderParams.submitBarPrice
+      this.totalTimes = orderParams.totalTimes + ''
+      this.useShow = false
+      this.purchaseShow = true
+      this.paymentPwd = ''
+    }
+  },
   mounted() {
     this.getPersonal()
+    this.getPackagesList()
     this.getProductDetail()
+  },
+  beforeRouteLeave(to, from, next) {
+    if (to.name === 'applyContract' || to.name === 'rechargeExplain') {
+      if (!from.meta.keepAlive) {
+        from.meta.keepAlive = true
+      }
+      const orderParams = {
+        totalPrice: Number(this.packgeList[this.activeIndex].money),
+        price: this.productDetail.price,
+        totalTimes: this.totalTimes,
+        submitBarPrice: this.totalPrice * 100
+      }
+      localStorage.setItem('orderParams', JSON.stringify(orderParams))
+      next()
+    } else {
+      from.meta.keepAlive = false
+      to.meta.keepAlive = false
+      localStorage.removeItem('orderParams')
+      next()
+    }
   },
   methods: {
     getAbaoDoc() {
-      this.$router.push('/abao-doc')
+      window.open(`${window.location.protocol}//${window.location.host}/docs/#/`)
     },
     agreePolicy() {
       this.$router.push({
@@ -226,6 +274,13 @@ export default {
           id: this.$route.query.id
         }
       })
+    },
+    getPirce(index) {
+      this.freeUse()
+      this.select(index)
+    },
+    selectPay(index) {
+      this.paymentIndex = index
     },
     forgotPwd() {
       this.$router.push({
@@ -243,7 +298,7 @@ export default {
           this.trial_number = res.data.data.trial_number
           this.trial_number <= 0 ? this.activeIndex = 1 : this.activeIndex = 0
           this.isHasPaymentPwd = !!res.data.data.payment_code
-          this.getPackagesList()
+          // this.getPackagesList()
         })
       }
     },
@@ -324,12 +379,31 @@ export default {
       })
     },
     submit() {
+      if (this.paymentIndex === 0) {
+        this.balancePay()
+      } else if (this.paymentIndex === 1) {
+        this.weChatPay()
+      }
+    },
+    weChatPay() {
+      const orderParams = {
+        product_name: '诚龙阿宝',
+        product_id: this.$route.query.id,
+        user_code: localStorage.getItem('userCode'),
+        buy_num: this.totalTimes + '',
+        total_amount: this.totalPrice + ''
+      }
+      weChatH5Pay(orderParams).then(res => {
+        window.location.href = res.data.data.weChat_url
+      })
+    },
+    balancePay() {
       this.submitShow = true
       const orderParams = {
         product_name: '诚龙阿宝',
         price_number: this.productDetail.price,
         payment_amount: this.totalPrice + '',
-        payment_type: '3',
+        payment_type: '4',
         phone: '',
         payment_code: this.paymentPwd,
         order_status: '1',
@@ -347,6 +421,16 @@ export default {
             this.$router.push('/order-list')
           }, 2000)
         } else {
+          if (res.data.code === 500 && res.data.msg === '金额不足，请及时充值') {
+            Dialog.confirm({
+              title: '余额不足提醒',
+              message: '当前余额不足，是否充值？'
+            }).then(() => {
+              this.$router.push('/recharge-explain')
+            }).catch(() => {
+              // on cancel
+            })
+          }
           this.submitShow = false
         }
       }).catch(() => {

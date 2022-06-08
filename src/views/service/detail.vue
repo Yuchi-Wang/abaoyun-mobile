@@ -80,7 +80,7 @@
         type="datetime"
         :min-date="minEndDate"
         :max-date="maxEndDate"
-        title="选择开始时间"
+        title="选择结束时间"
         show-toolbar
         @confirm="onEndConfirm"
         @cancel="onEndCancel"
@@ -210,7 +210,7 @@ export default {
       getChatStatistics(params).then(res => {
         this.serviceList[0].times = res.data.data.todayTime
         this.serviceList[1].times = res.data.data.surplusTime
-        this.dateList = res.data.data.aBaoService.map(item => item.date.replace(/\b(0+)/gi, '').replace(/\-/g, '.') )
+        this.dateList = res.data.data.aBaoService.map(item => item.date.replace(/\b(0+)/gi, '').replace(/\-/g, '.'))
         this.countList = res.data.data.aBaoService.map(item => item.count)
         this.drawLine()
       })

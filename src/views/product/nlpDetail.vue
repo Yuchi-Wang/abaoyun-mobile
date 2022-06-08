@@ -54,8 +54,8 @@
         <span class="main-title">产品定价</span>
       </h3>
       <van-row>
-        <van-col v-for="item in packgeList" :key="item.id" span="8">
-          <div class="price-list-bg">
+        <van-col v-for="(item, index) in packgeList" :key="item.id" span="8">
+          <div class="price-list-bg" @click="getPirce(index)">
             <span class="price-type">{{ item.name }}</span>
             <h4>服务量 </h4>
             <p class="times">{{ item.times }}次</p>
@@ -84,13 +84,13 @@
         </van-col>
       </van-row>
       <p v-if="isDisable" class="disable-tip">您已申请过免费试用</p>
-      <van-button class="purchase-button" type="info" @click="purchase" :disabled="isDisable">购买</van-button>
+      <van-button class="purchase-button" type="info" :disabled="isDisable" @click="purchase">购买</van-button>
     </van-popup>
     <!-- 选择付款方式 -->
     <van-popup v-model="purchaseShow" position="bottom" class="select-set-meal" @click-overlay="resetPayForm">
       <van-field v-model="paymentPwd" type="password" label="支付密码：" maxlength="16" class="pwd-input" placeholder="请输入当前支付密码" />
       <p class="fotgot-or-set-pwd">
-        <span v-if="isHasPaymentPwd" @click="forgotPwd" style="text-align: right">忘记密码？</span>
+        <span v-if="isHasPaymentPwd" style="text-align: right" @click="forgotPwd">忘记密码？</span>
         <span v-else style="text-align: left">当前账户未设置支付密码，<i @click="setPaymentPwd">请点击设置</i></span>
       </p>
       <van-row gutter="10">
@@ -128,7 +128,7 @@
 </template>
 
 <script>
-import { Toast } from 'vant'
+import { Dialog, Toast } from 'vant'
 import { getToken } from '@/utils/auth'
 import { getUserInfo } from '@/api/user'
 import { createOrder } from '@/api/order'
@@ -191,13 +191,49 @@ export default {
       }
     }
   },
+  activated() {
+    if (this.$fromUrl.name === 'applyContract' || this.$fromUrl.name === 'rechargeResult') {
+      const orderParams = JSON.parse(localStorage.getItem('orderParams'))
+      this.productDetail.price = orderParams.price
+      this.totalPrice = orderParams.totalPrice
+      this.submitBarPrice = orderParams.submitBarPrice
+      this.totalTimes = this.totalTimes + ''
+      this.useShow = false
+      this.purchaseShow = true
+      this.paymentPwd = ''
+    }
+  },
   mounted() {
     this.getProductDetail()
     this.getPersonal()
   },
+  beforeRouteLeave(to, from, next) {
+    if (to.name === 'applyContract' || to.name === 'rechargeExplain') {
+      if (!from.meta.keepAlive) {
+        from.meta.keepAlive = true
+      }
+      const orderParams = {
+        totalPrice: Number(this.packgeList[this.activeIndex].money),
+        price: this.productDetail.price,
+        totalTimes: this.totalTimes,
+        submitBarPrice: this.totalPrice * 100
+      }
+      localStorage.setItem('orderParams', JSON.stringify(orderParams))
+      next()
+    } else {
+      from.meta.keepAlive = false
+      to.meta.keepAlive = false
+      localStorage.removeItem('orderParams')
+      next()
+    }
+  },
   methods: {
     getNlpDoc() {
-      this.$router.push('/nlp-doc')
+      window.open(`${window.location.protocol}//${window.location.host}/docs/#/`)
+    },
+    getPirce(index) {
+      this.freeUse()
+      this.select(index)
     },
     agreePolicy() {
       this.$router.push({
@@ -233,7 +269,7 @@ export default {
         query: {
           operation: 'set'
         }
-      })    
+      })
     },
     getPackagesList() {
       const params = {
@@ -306,7 +342,7 @@ export default {
         product_name: '金融NLP',
         price_number: this.productDetail.price,
         payment_amount: this.totalPrice + '',
-        payment_type: '3',
+        payment_type: '4',
         order_status: '1',
         phone: '',
         payment_code: this.paymentPwd,
@@ -324,6 +360,16 @@ export default {
             this.$router.push('/order-list')
           }, 2000)
         } else {
+          if (res.data.code === 500 && res.data.msg === '金额不足，请及时充值') {
+            Dialog.confirm({
+              title: '余额不足提醒',
+              message: '当前余额不足，是否充值？'
+            }).then(() => {
+              this.$router.push('/recharge-explain')
+            }).catch(() => {
+              // on cancel
+            })
+          }
           this.submitShow = false
         }
       }).catch(() => {

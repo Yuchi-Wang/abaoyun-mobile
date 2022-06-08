@@ -15,7 +15,7 @@
         <h3 class="security-title">安全验证</h3>
         <van-row gutter="6">
           <van-col v-for="item in securityList" :key="item.id" span="12">
-            <div class="security-list">
+            <div class="security-list" @click="getProductDetail(item.url)">
               <div class="security-list-bg" :style="{backgroundImage: 'url('+ item.src +')'}" />
               <h3>{{ item.title }}</h3>
               <p>{{ item.content }}</p>
@@ -27,7 +27,7 @@
         <h3 class="voice-title">智能语音</h3>
         <van-row gutter="6">
           <van-col v-for="item in voiceList" :key="item.id" span="12">
-            <div class="security-list">
+            <div class="security-list" @click="getProductDetail(item.url)">
               <div class="security-list-bg" :style="{backgroundImage: 'url('+ item.src +')'}" />
               <h3>{{ item.title }}</h3>
               <p>{{ item.content }}</p>
@@ -53,13 +53,15 @@ export default {
         id: 1,
         src: require('@/assets/img/product/people.svg'),
         title: '人脸识别',
-        content: '人脸验证、识别'
+        content: '人脸验证、识别',
+        url: '/face-recognition'
       },
       {
         id: 2,
         src: require('@/assets/img/product/voice.svg'),
         title: '声纹验证',
-        content: '声纹录制、验证'
+        content: '声纹录制、验证',
+        url: '/voice-verification'
       }
     ],
     voiceList: [
@@ -67,13 +69,15 @@ export default {
         id: 1,
         src: require('@/assets/img/product/listen.svg'),
         title: '语音听写',
-        content: '语音识别、录入'
+        content: '语音识别、录入',
+        url: '/voice-dictation'
       },
       {
         id: 2,
         src: require('@/assets/img/product/words.svg'),
         title: '文字转语音',
-        content: '语音转换'
+        content: '语音转换',
+        url: '/voice-to-words'
       }
     ]
   }),
@@ -96,6 +100,9 @@ export default {
           }
         }
       })
+    },
+    getProductDetail(url) {
+      this.$router.push(url)
     },
     getDetail(id, index) {
       if (index === 0) {

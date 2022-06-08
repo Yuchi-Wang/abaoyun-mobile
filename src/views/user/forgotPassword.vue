@@ -153,8 +153,8 @@ export default {
     submit() {
       if (this.password === '') {
         Toast('密码不能为空')
-      } else if (!this.passwordTest.test(this.newPassword)) {
-        Toast('至少包含6位字符、字母数字组合、1位大写字母')
+      } else if (!this.passwordTest.test(this.password)) {
+        Toast('至少包含6位字符、小写字母及数字组合、1位大写字母')
       } else {
         // 1手机找回，2邮箱找回
         const params = {

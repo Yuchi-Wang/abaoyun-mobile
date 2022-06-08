@@ -34,7 +34,7 @@
       </van-cell>
       <van-cell title="发票内容" value="明细" />
     </van-cell-group>
-    <van-button v-if="userType" type="info" :loading="applyLoading" @click="applyInvoice">确  认</van-button>
+    <van-button v-if="userType" type="info" :loading="applyLoading" @click="submit">确  认</van-button>
   </div>
 </template>
 
@@ -65,6 +65,7 @@ export default {
       invoice_amount: '',
       user_code: localStorage.getItem('userCode')
     },
+    oldDetail: {},
     userType: ''
   }),
   mounted() {
@@ -77,6 +78,9 @@ export default {
       this.invoiceDetail.order_number = this.$route.query.orderId
       if (this.$route.query.type === 'apply') {
         this.headerTitle = '申请开票'
+      } else if (this.$route.query.type === 'again-apply') {
+        this.headerTitle = '申请开票'
+        this.getDetail()
       } else if (this.$route.query.type === 'edit') {
         this.headerTitle = '修改开票'
         this.getDetail()
@@ -99,11 +103,12 @@ export default {
     },
     getDetail() {
       getDetail({ id: this.$route.query.invoiceId }).then(res => {
-        this.invoiceDetail = res.data.data
+        const resultData = res.data.data
+        this.$route.query.type === 'edit' ? this.invoiceDetail = resultData : this.oldDetail = resultData
         this.userType = this.invoiceDetail.invoice_type + ''
       })
     },
-    applyInvoice() {
+    submit() {
       this.invoiceDetail.invoice_type = Number(this.userType)
       this.invoiceDetail.status = '1'
       if (!this.invoiceDetail.invoice_title.length) {
@@ -115,22 +120,41 @@ export default {
         if (this.invoiceDetail.invoice_type === 2) {
           if (!this.invoiceDetail.duty_paragraph.length) {
             Toast('税务登记号不能为空')
+          } else if (this.invoiceDetail.duty_paragraph.length < 15) {
+            Toast('税务登记号长度不对')
           } else {
-            if (this.$route.query.invoiceId) {
-              this.createOrUpdateInvoice(updateInvoice, '修改成功')
-            } else {
-              this.createOrUpdateInvoice(createInvoice, '已发起申请')
-            }
+            this.applyInvoice()
           }
         } else if (this.invoiceDetail.invoice_type === 1) {
           // 个人
-          if (this.$route.query.invoiceId) {
-            this.createOrUpdateInvoice(updateInvoice, '修改成功')
-          } else {
-            this.createOrUpdateInvoice(createInvoice, '已发起申请')
-          }
+          this.applyInvoice()
         }
       }
+    },
+    applyInvoice() {
+      if (this.$route.query.invoiceId && this.$route.query.type === 'edit') {
+        this.createOrUpdateInvoice(updateInvoice, '修改成功')
+      } else if (this.$route.query.type === 'apply') {
+        this.createOrUpdateInvoice(createInvoice, '已发起申请')
+      } else if (this.$route.query.type === 'again-apply') {
+        this.againApply()
+      }
+    },
+    againApply() {
+      this.applyLoading = true
+      this.oldDetail.status = 5
+      updateInvoice(this.oldDetail).then(res => {
+        createInvoice(this.invoiceDetail).then(response => {
+          if (response.data.code === 200) {
+            Toast('申请成功')
+            this.$router.replace('/invoice-list')
+          } else {
+            this.applyLoading = false
+          }
+        }).finally(() => {
+          this.applyLoading = false
+        })
+      })
     },
     createOrUpdateInvoice(methods, toastInfo) {
       this.applyLoading = true

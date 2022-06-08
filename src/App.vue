@@ -1,49 +1,51 @@
 <template>
   <div id="app">
-    <transition :name="transitionName">
-      <router-view class="switch-router" />
-    </transition>
+    <keep-alive>
+        <router-view v-if="$route.meta.keepAlive" />
+    </keep-alive>
+    <router-view v-if="!$route.meta.keepAlive" />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App',
-  data: () => ({
-    transitionName: 'slide-left'
-  }),
-  watch: {
-    $route() {
-      const isBack = this.$router.isBack
-      if (isBack) {
-        this.transitionName = 'slide-left'
-      } else {
-        this.transitionName = 'slide-right'
-      }
-      this.$router.isBack = false
-    }
-  }
+  name: 'App'
+  // data: () => ({
+  //   transitionName: 'slide-left'
+  // }),
+  // watch: {
+  //   $route() {
+  //     const isBack = this.$router.isBack
+  //     if (isBack) {
+  //       this.transitionName = 'slide-left'
+  //     } else {
+  //       this.transitionName = 'slide-right'
+  //     }
+  //     this.$router.isBack = false
+  //   }
+  // }
 }
 </script>
-<style lang="scss">
-.slide-left-enter,.slide-right-leave-active {
-  opacity: 0;
-  transform: translate3d(-100%, 0, 0);
-}
 
-.switch-router {
-  position: absolute;
-  height: 100%;
-  transition: all .5s ease;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  backface-visibility: hidden;
-  perspective: 1000;
-}
-.slide-left-leave-active,.slide-right-enter {
-  opacity: 0;
-  transform: translate3d(100%, 0 ,0);
-}
+<style lang="scss">
+// .slide-left-enter,.slide-right-leave-active {
+//   opacity: 0;
+//   transform: translate3d(-100%, 0, 0);
+// }
+
+// .switch-router {
+//   position: absolute;
+//   height: 100%;
+//   transition: all .5s ease;
+//   top: 0;
+//   right: 0;
+//   left: 0;
+//   bottom: 0;
+//   backface-visibility: hidden;
+//   perspective: 1000;
+// }
+// .slide-left-leave-active,.slide-right-enter {
+//   opacity: 0;
+//   transform: translate3d(100%, 0 ,0);
+// }
 </style>

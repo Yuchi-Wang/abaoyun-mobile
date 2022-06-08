@@ -64,7 +64,9 @@ export default {
       })
     },
     save() {
-      if (this.newPassword === '') {
+      if (!this.originPassword.length && this.$route.query.operation !== 'set') {
+        Toast('原密码不能为空')
+      } else if (this.newPassword === '') {
         Toast('密码不能为空')
       } else if (this.newPassword.length < 6) {
         Toast('密码不得低于6位字符')

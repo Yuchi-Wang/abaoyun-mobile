@@ -27,6 +27,15 @@ export function createOrder(data) {
   })
 }
 
+// 修改订单
+export function updateOrder(data) {
+  return request({
+    url: '/orderManage/updateOrder',
+    method: 'post',
+    data
+  })
+}
+
 // 删除订单
 export function deleteOrder(data) {
   return request({

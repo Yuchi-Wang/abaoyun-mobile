@@ -7,8 +7,8 @@
       <ul class="card-list" v-if="cardShow">
         <li v-for="item in cardList" :key="item.id" @click="selectCard(item.credit_card)">{{ item.credit_card }}</li>
       </ul>
-      <van-field v-model="money" type="digit" label="充值金额：" clearable placeholder="请输入充值金额" maxlength="10" />
-      <van-field v-model="name" label="姓名" placeholder="请输入该卡号绑定的姓名" clearable :border="false" maxlength="10" />
+      <van-field v-model="money" type="digit" label="充值金额：" clearable placeholder="请输入充值金额" maxlength="9" @focus="clearCardNum" />
+      <van-field v-model="name" label="姓名" placeholder="请输入该卡号绑定的姓名" clearable :border="false" maxlength="10" @focus="clearCardNum" />
       <van-uploader
         v-model="fileList"
         multiple
@@ -22,8 +22,8 @@
         </div>
       </van-uploader>
       <van-button @click="submit">确认提交</van-button>
-      <p style="margin-top: 3rem">说明:上传您的交易凭据后，我们会进行核实，核实时间为一般为1到2个工作日，处理完后会告知您，请及时查看到账情况</p>
     </div>
+    <p class="remain">说明:上传您的交易凭据后，我们会进行核实，核实时间为一般为1到2个工作日，处理完后会告知您，请及时查看到账情况</p>
   </div>
 </template>
 
@@ -57,10 +57,13 @@ export default {
     getHistoryBill() {
       this.$router.push('/history-bill')
     },
+    clearCardNum() {
+      this.cardList = []
+      this.cardShow = false
+    },
     getBankCardNumList(num) {
       if (!num.length) {
-        this.cardList = []
-        this.cardShow = false
+        this.clearCardNum()
       } else {
         const params = {
           credit_card: num,
@@ -70,23 +73,20 @@ export default {
           const result = res.data.data
           if (result.list && result.list.length) {
             if (num === result.list[0].credit_card) {
-              this.cardList = []
-              this.cardShow = false
+              this.clearCardNum()
             } else {
               this.cardList = result.list
               this.cardShow = true
             }
           } else {
-            this.cardList = []
-            this.cardShow = false
+            this.clearCardNum()
           }
         })
       }
     },
     selectCard(num) {
       this.bankCardNum = num
-      this.cardList = []
-      this.cardShow = false
+      this.clearCardNum()
     },
     onRead(file) {
       this.isUploadFile = true
@@ -124,9 +124,11 @@ export default {
       } else if (this.filePath.length && !this.isUploadFile) {
         if (!this.bankCardNum.length) {
           Toast('银行卡号不能为空')
+        } else if (this.bankCardNum.length < 16) {
+          Toast('银行卡号长度不对')
         } else if (!this.money.length) {
           Toast('充值金额不能为空')
-        } else if (this.money === '0') {
+        } else if (Number(this.money) === 0) {
           Toast('充值金额不能为0')
         } else if (!this.name.length) {
           Toast('姓名不能为空')
@@ -241,5 +243,13 @@ export default {
     border-radius: 1.6667rem;
     color: #fff;
   }
+}
+.remain {
+  margin: 1.5rem 2.083rem 0;
+  font-size: 1.167rem;
+  font-weight: 400;
+  color: #555;
+  line-height: 1.667rem;
+  text-align: justify;
 }
 </style>

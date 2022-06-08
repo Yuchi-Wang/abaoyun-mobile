@@ -36,6 +36,15 @@ export function deleteCheck(data) {
   })
 }
 
+// 修改审核信息
+export function updateCheck(data) {
+  return request({
+    url: '/CheckManage/updateCheck',
+    method: 'post',
+    data
+  })
+}
+
 // 获取银行卡列表
 export function getBankCardNumList(data) {
   return request({

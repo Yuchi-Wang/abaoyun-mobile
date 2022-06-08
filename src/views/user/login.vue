@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div id="main" class="main">
     <div class="logo" />
     <h3 class="title">阿宝云</h3>
     <van-tabs
@@ -17,8 +17,10 @@
           class="mobile"
           type="tel"
           maxlength="11"
-          :border ="false"
+          :border="false"
           placeholder="请输入手机号"
+          @focus="handleFocus"
+          @blur="handleBlur"
         />
       </van-tab>
       <van-tab title="邮箱">
@@ -26,8 +28,10 @@
           v-model="email"
           class="mobile"
           maxlength="50"
-          :border ="false"
+          :border="false"
           placeholder="请输入邮箱号"
+          @focus="handleFocus"
+          @blur="handleBlur"
         />
       </van-tab>
       <van-tab title="账号登录">
@@ -35,16 +39,20 @@
           v-model="account"
           class="mobile"
           maxlength="50"
-          :border ="false"
+          :border="false"
           placeholder="请输入手机/邮箱号"
+          @focus="handleFocus"
+          @blur="handleBlur"
         />
         <van-field
           v-model="password"
           type="password"
           class="mobile"
           maxlength="16"
-          :border ="false"
+          :border="false"
           placeholder="请输入密码"
+          @focus="handleFocus"
+          @blur="handleBlur"
         />
       </van-tab>
       <p v-if="active === 2" class="forgot-password" @click="forgetPassword">忘记密码？</p>
@@ -53,8 +61,8 @@
       请阅读并同意 <span>《用户协议》</span>和<span>《隐私政策》</span>
     </van-checkbox> -->
     <van-button v-if="active === 0 || active === 1" round type="info" @click="getVcCode">获取验证码</van-button>
-    <van-button v-if="active === 2" round type="info" @click="login" :loading="loginLoading">登录</van-button>
-    <p class="return-home" @click="turnBack">返回首页</p>
+    <van-button v-if="active === 2" round type="info" :loading="loginLoading" @click="login">登录</van-button>
+    <p class="return-home" :style="{'display':isHidden ? 'none':'block'}" @click="turnBack">返回首页</p>
   </div>
 </template>
 
@@ -73,10 +81,17 @@ export default {
     redirect: '/',
     account: '',
     password: '',
-    loginLoading: false
+    loginLoading: false,
+    isHidden: false,
+    timer: null
   }),
   mounted() {
     this.init()
+  },
+  destroyed() {
+    if (this.timer) {
+      clearTimeout(this.timer)
+    }
   },
   methods: {
     init() {
@@ -84,6 +99,20 @@ export default {
       if (redirect) {
         this.redirect = redirect
       }
+    },
+    handleFocus() {
+      this.isHidden = true
+      if (this.timer) {
+        clearTimeout(this.timer)
+      }
+    },
+    handleBlur() {
+      this.timer = setTimeout(() => {
+        window.scrollTo(0, 0)
+      }, 10)
+      setTimeout(() => {
+        this.isHidden = false
+      }, 300)
     },
     turnBack() {
       this.$router.replace('/')
@@ -155,11 +184,9 @@ export default {
 <style lang="scss" scoped>
 .main {
   padding: 7.083rem 4.6rem 0;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;/* 解决ios滑动不流畅问题 */
   background: url("../../assets/img/user/my/login-bg.jpg") no-repeat;
   background-size: cover;
   box-sizing: border-box;
